@@ -1,0 +1,26 @@
+# Exclude dependency repositories
+crisp_controllers/
+franka_description/
+franka_ros2/
+gz_ros2_control/
+libfranka/
+olvx_descriptions_module/
+ros2_control/
+ros2_robotiq_gripper/
+serial/
+zed_description/
+.env
+install/
+build/
+log/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+.vscode/
