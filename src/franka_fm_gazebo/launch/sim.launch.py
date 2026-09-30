@@ -147,10 +147,11 @@ def generate_launch_description():
     gazebo_gui_config = os.path.join(fm_robo_pkg, 'config', 'gui.config')
     gz_args = f'{world_file} -r --gui-config {gazebo_gui_config}'
 
-    # Gazebo Sim
+    # Gazebo Sim resource path (needed for loading meshes and sdf files)
     os.environ['GZ_SIM_RESOURCE_PATH'] = os.pathsep.join([
+        fm_robo_pkg,
         os.path.dirname(get_package_share_directory('franka_description')),
-        get_package_share_directory('franka_gazebo_bringup')])
+    ])
 
     gazebo_launch = IncludeLaunchDescription(
         PathJoinSubstitution([
@@ -209,7 +210,7 @@ def generate_launch_description():
     wrist_camera_bridge = Node(
         package="ros_gz_image",
         executable="image_bridge",
-        arguments=["/camera/image"],
+        arguments=['/wrist_camera/image'],
         output="screen",
     )
 
