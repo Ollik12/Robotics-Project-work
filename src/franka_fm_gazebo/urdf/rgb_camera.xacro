@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<robot name="rgb_camera" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!--
+    Macro: wrist_rgb_camera
+    - Adds a small physical camera_link (with inertial, collision, visual)
+    - Adds an optical frame with standard ROS camera rotation
+    - Fix-joints it to a parent link (default: fr3_link7)
+    - Declares a pure SDF camera sensor (Ignition/Gazebo Sim style)
+    Works on Ignition Fortress (Gazebo 6) with world Sensors system loaded.
+  -->
+  <xacro:macro name="rgb_camera"
+    params="
+      parent_link:='fr3_link7'
+      camera_name:='rgb_camera'
+      camera_link_name:='camera_link'
+      camera_optical_link_name:='camera_link_optical'
+      xyz:='-0.04 0.04 0.1'
+      rpy:='0 0 ${pi/4}'
+    ">
+
+    <!-- Physical link so Gazebo keeps it in the tree -->
+    <link name="${camera_link_name}">
+      <inertial>
+        <mass value="0.01" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="1e-6" iyy="1e-6" izz="1e-6" ixy="0" ixz="0" iyz="0" />
+      </inertial>
+
+      <visual>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <mesh filename="file://$(find franka_fm_gazebo)/meshes/d435.dae" scale="1 1 1"/>
+        </geometry>
+      </visual>
+
+      <collision>
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <geometry>
+          <box size="0.1 0.02 0.02" />
+        </geometry>
+      </collision>
+    </link>
+
+    <!-- Mount to wrist (or any parent link you pass in) -->
+    <joint name="${camera_name}_mount" type="fixed">
+      <parent link="${parent_link}" />
+      <child link="${camera_link_name}" />
+      <origin xyz="${xyz}" rpy="${rpy}" />
+    </joint>
+
+    <!-- Optical frame: x right, y down, z forward -->
+    <link name="${camera_optical_link_name}">
+      <inertial>
+        <mass value="1e-6" />
+        <origin xyz="0 0 0" rpy="0 0 0" />
+        <inertia ixx="1e-12" iyy="1e-12" izz="1e-12" ixy="0" ixz="0" iyz="0" />
+      </inertial>
+    </link>
+    <joint name="${camera_name}_optical_joint" type="fixed">
+      <parent link="${camera_link_name}" />
+      <child link="${camera_optical_link_name}" />
+      <!-- rotate into optical frame (z forward, x right, y down),
+           problem is that camera is spawned so that it points along x axis -->
+      <origin xyz="0 0 0" rpy="${pi} -${pi} -${pi/2}" />
+    </joint>
+
+    <!-- Gazebo sensor -->
+    <gazebo reference="fr3_camera_link_optical">
+        <sensor name="camera" type="camera">
+          <always_on>true</always_on>
+          <update_rate>30</update_rate>
+          <visualize>true</visualize>
+          <topic>/camera/image</topic>
+          <ignition_frame_id>fr3_camera_link_optical</ignition_frame_id>
+          <!-- rotate the camera to point towards z-axis (desired optical axis) -->
+          <pose>0 0 0 ${pi/2} -${pi/2} 0</pose>
+          <camera>
+            <horizontal_fov>1.047</horizontal_fov>
+            <image>
+              <width>640</width>
+              <height>480</height>
+              <format>R8G8B8</format>
+            </image>
+            <clip>
+              <near>0.05</near>
+              <far>10.0</far>
+            </clip>
+          </camera>
+        </sensor>
+      </gazebo>
+
+  </xacro:macro>
+</robot>

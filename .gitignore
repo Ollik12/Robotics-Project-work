@@ -9,6 +9,9 @@ ros2_control/
 ros2_robotiq_gripper/
 serial/
 zed_description/
+crisp/
+crisp_py/
+
 .env
 install/
 build/
@@ -22,5 +25,4 @@ CMakeCache.txt
 CMakeFiles/
 cmake_install.cmake
 Makefile
-
 .vscode/

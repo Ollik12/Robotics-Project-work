@@ -143,7 +143,9 @@ def generate_launch_description():
     # Gazebo Sim
     fm_robo_pkg = get_package_share_directory('franka_fm_gazebo')
     world_file = os.path.join(fm_robo_pkg, 'worlds', 'workcell.sdf')
-    gz_args = f'{world_file} -r'
+
+    gazebo_gui_config = os.path.join(fm_robo_pkg, 'config', 'gui.config')
+    gz_args = f'{world_file} -r --gui-config {gazebo_gui_config}'
 
     # Gazebo Sim
     os.environ['GZ_SIM_RESOURCE_PATH'] = os.pathsep.join([
@@ -204,6 +206,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    wrist_camera_bridge = Node(
+        package="ros_gz_image",
+        executable="image_bridge",
+        arguments=["/camera/image"],
+        output="screen",
+    )
+
     return LaunchDescription([
         load_gripper_launch_argument,
         franka_hand_launch_argument,
@@ -212,6 +221,7 @@ def generate_launch_description():
         gz_args_launch_argument,
         rviz_launch_argument,
         clock_bridge,
+        wrist_camera_bridge,
         gazebo_launch,
         robot_state_publisher,
         rviz_node,
@@ -246,6 +256,13 @@ def generate_launch_description():
         Node(
             package="controller_manager",
             executable="spawner",
+            arguments=["joint_trajectory_controller", "--inactive"],
+            parameters=[controllers],
+            output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
             arguments=["gravity_compensation", "--inactive"],
             parameters=[controllers],
             output="screen",
@@ -254,6 +271,13 @@ def generate_launch_description():
             package="controller_manager",
             executable="spawner",
             arguments=["pose_broadcaster"],
+            parameters=[controllers],
+            output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["twist_broadcaster"],
             parameters=[controllers],
             output="screen",
         ),
