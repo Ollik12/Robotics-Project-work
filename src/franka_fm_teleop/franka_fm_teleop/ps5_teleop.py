@@ -157,7 +157,7 @@ class PS5TeleopNode(Node):
         # Gripper control
         gripper_msg = Float64MultiArray()
         if self.gripper_close:
-            gripper_msg.data = [-0.1]  # Close gripper
+            gripper_msg.data = [-2.5]  # Close gripper
         elif self.gripper_open:
             gripper_msg.data = [0.05]  # Open gripper
 

@@ -29,7 +29,7 @@
     <!-- Macro includes (definitions only - no top-level emission)        -->
     <!-- ================================================================ -->
     <!-- ros2_control hardware interface -->
-    <xacro:include filename="$(find franka_hardware)/ros2_control/franka_arm.ros2_control.xacro"/>
+    <xacro:include filename="$(find franka_fm_gazebo)/urdf/franka_arm.ros2_control.xacro"/>
     <!-- Gazebo hardware-plugin block + gz_ros2_control system (owned by franka_gazebo_bringup) -->
     <xacro:include filename="$(find franka_fm_gazebo)/urdf/franka_gazebo_hardware_plugins.xacro"/>
     <!-- Gazebo transmissions and SDF tag macros -->
