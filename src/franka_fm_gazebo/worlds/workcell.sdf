@@ -95,5 +95,42 @@
             </link>
         </model>
 
+        <!-- Camera to capture the workcell from the side -->
+        <model name='side_camera'>
+            <pose>-0.5 0.6 2.1 -0.1 0.9 -0.85</pose>
+            <static>true</static>
+            <link name='side_camera_link'>
+                <visual name='visual'>
+                    <geometry>
+                        <box>
+                            <size>0.1 0.1 0.1</size>
+                        </box>
+                    </geometry>
+                    <material>
+                        <ambient>0.1 0.1 0.8 1</ambient>
+                        <diffuse>0.1 0.1 0.8 1</diffuse>
+                    </material>
+                </visual>
+                <sensor name='camera_sensor' type='camera'>
+                    <topic>/side_camera/image</topic>
+                    <always_on>true</always_on>
+                    <update_rate>30</update_rate>
+                    <visualize>true</visualize>
+                    <camera>
+                        <horizontal_fov>1.047</horizontal_fov>
+                        <image>
+                            <width>320</width>
+                            <height>320</height>
+                            <format>R8G8B8</format>
+                        </image>
+                        <clip>
+                            <near>0.05</near>
+                            <far>10.0</far>
+                        </clip>
+                    </camera>
+                </sensor>
+            </link>
+        </model>
+
     </world>
 </sdf>

@@ -32,15 +32,14 @@ from launch.conditions import IfCondition
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
+def load_controller(controller_name: str):
 
-def load_controller(context: LaunchContext, controller_name):
-    controller_name_str = context.perform_substitution(controller_name)
     return [Node(
         package='controller_manager',
         executable='spawner',
         arguments=[
             'joint_state_broadcaster',
-            controller_name_str,
+            controller_name,
             '--controller-manager-timeout', '30',
         ],
         parameters=[PathJoinSubstitution([
@@ -162,6 +161,7 @@ def generate_launch_description():
         launch_arguments={'gz_args': gz_args}.items(),
     )
 
+    # Robot spawn in Gazebo
     spawn = Node(
         package='ros_gz_sim', executable='create',
         arguments=['-topic', '/robot_description',
@@ -214,6 +214,56 @@ def generate_launch_description():
         output="screen",
     )
 
+    side_camera_bridge = Node(
+        package="ros_gz_image",
+        executable="image_bridge",
+        arguments=['/side_camera/image'],
+        output="screen",
+    )
+
+    joint_state_broadcaster = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=[
+            'joint_state_broadcaster',
+        ],
+        parameters=[controllers],
+        output='screen',
+    )
+
+    # CRISP cartesian_impedance_controller
+    cartesian_impedance_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["cartesian_impedance_controller"],
+        parameters=[controllers],
+        output="screen",
+    )
+
+    pose_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["pose_broadcaster"],
+        parameters=[controllers],
+        output="screen",
+    )
+
+    twist_broadcaster = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["twist_broadcaster"],
+        parameters=[controllers],
+        output="screen",
+    )
+
+    gripper_controller = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["gripper_controller"],
+        parameters=[controllers],
+        output="screen",
+    )
+
     return LaunchDescription([
         load_gripper_launch_argument,
         franka_hand_launch_argument,
@@ -221,75 +271,19 @@ def generate_launch_description():
         namespace_launch_argument,
         gz_args_launch_argument,
         rviz_launch_argument,
+        joint_state_broadcaster,
         clock_bridge,
         wrist_camera_bridge,
+        side_camera_bridge,
         gazebo_launch,
         robot_state_publisher,
         rviz_node,
         spawn,
         joy_node,
-
-        Node(
-            package='controller_manager',
-            executable='spawner',
-            arguments=[
-                'joint_state_broadcaster',
-            ],
-            parameters=[controllers],
-            output='screen',
-        ),
-
-        # Activate cartesion_impedance_controller
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["cartesian_impedance_controller"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["joint_impedance_controller", "--inactive"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["joint_trajectory_controller", "--inactive"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["gravity_compensation", "--inactive"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["pose_broadcaster"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["twist_broadcaster"],
-            parameters=[controllers],
-            output="screen",
-        ),
-        Node(
-            package="controller_manager",
-            executable="spawner",
-            arguments=["gripper_controller"],
-            parameters=[controllers],
-            output="screen",
-        ),
-
+        cartesian_impedance_controller,
+        pose_broadcaster,
+        twist_broadcaster,
+        gripper_controller,
         RegisterEventHandler(
             OnShutdown(
                 on_shutdown=[
@@ -299,5 +293,5 @@ def generate_launch_description():
                     )
                 ]
             )
-        )
+        ),
     ])

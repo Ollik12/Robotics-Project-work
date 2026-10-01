@@ -22,6 +22,7 @@ class BagRecorder(Node):
 
     TOPICS = [
         "/wrist_camera/image",
+        "side_camera/image",
         "/joint_states",
         "/target_pose",
         "/task",
