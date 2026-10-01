@@ -171,8 +171,8 @@ def generate_launch_description():
         output='screen',
     )
 
-    rviz_file = os.path.join(get_package_share_directory('franka_description'),
-                             'rviz', 'visualize_franka.rviz')
+    rviz_file = os.path.join(get_package_share_directory('franka_fm_gazebo'),
+                             'config', 'config.rviz')
 
     rviz_node = Node(package='rviz2',
                      executable='rviz2',
@@ -282,7 +282,6 @@ def generate_launch_description():
             parameters=[controllers],
             output="screen",
         ),
-
         Node(
             package="controller_manager",
             executable="spawner",

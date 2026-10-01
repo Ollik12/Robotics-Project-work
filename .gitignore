@@ -26,3 +26,6 @@ CMakeFiles/
 cmake_install.cmake
 Makefile
 .vscode/
+
+# Exclude rosbag files from repo
+bags/
