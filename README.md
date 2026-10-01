@@ -107,4 +107,23 @@ The teleoperation node sends Cartesian motion commands to the robot through the 
 
 
 ## Keyboard teleoperation
-TODO: implement the keyboard teleoperation
+
+The FR3 can be also teleoperated using a keyboard
+
+### Controls
+
+| Control                  | Function                               |
+| ------------------------ | -------------------------------------- |
+| **Spacebar**             | Enable teleoperation / dead-man switch |
+| **W / S**                | Move the robot forward / backward (X)  |
+| **A / D**                | Move the robot left / right (Y)        |
+| **R / F**                | Move the robot up / down (Z)           |
+| **O**                    | Close gripper                          |
+| **P**                    | Open gripper                           |
+
+Start the simulation first, then launch the teleoperation node in a separate terminal:
+```
+source install/setup.bash 
+ros2 run franka_fm_teleop keyboard_teleop_node
+```
+The teleoperation node sends Cartesian motion commands to the robot through the ROS 2 control architecture with keyboard inputs

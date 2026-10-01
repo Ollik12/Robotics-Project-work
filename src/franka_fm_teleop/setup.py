@@ -25,6 +25,7 @@ setup(
     entry_points={
         'console_scripts': [
             'ps5_teleop_node = franka_fm_teleop.ps5_teleop:main',
+            'keyboard_teleop_node = franka_fm_teleop.keyboard_teleop:main',
         ],
     },
 )
