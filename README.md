@@ -24,7 +24,8 @@ cd Robotics-Project-work
 code .
 ```
 ### 3. Dev Containers setup
-Choose `Reopen in container` when prompted in VS Code
+- Choose `Reopen in container` when prompted in VS Code
+- If you miss the prompt, press **Ctrl+Shift+P** to open the Command Palette, then select `Reopen in container`
 
 The first container startup may take a few minutes while the development environment is created.
 
@@ -41,6 +42,12 @@ rosdep install --from-paths src --ignore-src -r -y
 ```
 
 ### 6. Build all ROS2 packages
+If you have problems with large colcon builds and container freezes
+```
+MAKEFLAGS="-j1" colcon build --executor sequential --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
+source install/setup.bash
+```
+Otherwise you can just build with:
 ```
 colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release
 source install/setup.bash
@@ -97,3 +104,7 @@ Start the simulation first, then launch the teleoperation node in a separate ter
 ros2 run franka_fm_teleop ps5_teleop_node
 ```
 The teleoperation node sends Cartesian motion commands to the robot through the ROS 2 control architecture.
+
+
+## Keyboard teleoperation
+TODO: implement the keyboard teleoperation
