@@ -21,8 +21,8 @@ class BagRecorder(Node):
     BAG_OUTPUT_DIR = "/ros2_ws/src/franka_fm_rec/bags"
 
     TOPICS = [
-        "/wrist_camera/image",
-        "side_camera/image",
+        "/wrist_camera/image/compressed",
+        "/side_camera/image/compressed",
         "/joint_states",
         "/target_pose",
         "/task",

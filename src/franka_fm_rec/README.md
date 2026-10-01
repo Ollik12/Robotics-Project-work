@@ -3,7 +3,8 @@
 The `franka_fm_rec` package provides a simple ROS 2 bag recorder for collecting robot teleoperation episodes.
 
 ### Recorded topics
-- `/wrist_camera/image`
+- `/wrist_camera/image/compressed`
+- `side_camera/image/compressed`
 - `/joint_states`
 - `/target_pose`
 - `/task`
