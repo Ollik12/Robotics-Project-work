@@ -98,6 +98,11 @@ Currently Docker environment has no `ROS_DOMAIN_ID`, but the Pixi ROS2 Jazzy is 
 export ROS_DOMAIN_ID=100
 ```
 
+Alternatively, you can unset the Pixi `ROS_DOMAIN_ID` with:
+```bash
+unset ROS_DOMAIN_ID
+```
+
 ### 2. Copy config
 
 Copy the config `franka_fm.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory
@@ -136,3 +141,7 @@ Teleop is ready
 - Implement script with teleop and dataset recording functionality using `crisp_gym` `RecordingManager`. Similar to `crisp_gym/crisp_gym/scripts/record_lerobot_format_leader_follower.py`
 - Include image topics in dataset recorder script (i.e. include cameras in CRISP environment config)
 - Record dataset using Gazebo and CRISP and successfully push it into Hugging Face dataset repository
+
+
+# Architecture idea:
+![Environment architecture](/crisp/images/franka_fm_crisp.png)
