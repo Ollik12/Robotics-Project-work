@@ -1,0 +1,46 @@
+services:
+  franka_ros2_jazzy:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      network: host
+      args:
+        - USER_UID=${USER_UID}
+        - USER_GID=${USER_GID}
+    container_name: ${CONTAINER_NAME}
+    network_mode: "host"
+    privileged: true
+    command: /bin/bash
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./src:/ros2_ws/src
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ./limits.conf:/etc/security/limits.conf
+      - /dev:/dev
+    environment:
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+      __NV_PRIME_RENDER_OFFLOAD: "1"
+      __GLX_VENDOR_LIBRARY_NAME: nvidia
+      QT_X11_NO_MITSHM: 1
+      DISPLAY: $DISPLAY
+      # Force gz-transport discovery over loopback; container multicast is
+      # unreliable, which otherwise breaks inter-process world discovery.
+      GZ_IP: 127.0.0.1
+
+    runtime: nvidia
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    cap_add:
+      - SYS_NICE
+    ulimits:
+      rtprio: 99
+      rttime: -1
+      memlock: 8428281856
+

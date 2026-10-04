@@ -27,9 +27,14 @@ code .
 - Choose `Reopen in container` when prompted in VS Code
 - If you miss the prompt, press **Ctrl+Shift+P** to open the Command Palette, then select `Reopen in container`
 
-The first container startup may take a few minutes while the development environment is created.
+#### NVIDIA GPU
+- If you encounter problems with NVIDIA GPU e.g. Gazebo is not opened -> install **NVIDIA Container Toolkit**. Follow [these instructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html) until 'Configuring Docker' header.
+- When opening devcontainer choose `project_work_nvidia` devcontainer.json file to load NVIDIA specific Docker configuration
 
-### 4. Import dependecies (franka + CRISP controllers)
+> [!NOTE]
+> The first container startup may take a few minutes while the development environment is created.
+
+### 4. Import dependencies (Franka + CRISP controllers)
 ```
 vcs import src < dependency.repos --recursive --skip-existing
 ```
