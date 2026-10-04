@@ -259,7 +259,7 @@ Visualization Manager:
         fr3_rightfinger:
           Value: false
         world:
-          Value: false
+          Value: true
       Marker Scale: 1
       Name: TF
       Show Arrows: true
@@ -358,25 +358,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.737480401992798
+      Distance: 3.0576839447021484
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.005491261370480061
-        Y: -0.07745686918497086
-        Z: 0.32312366366386414
+        X: 0.007216546684503555
+        Y: -0.09300903975963593
+        Z: 0.3442043960094452
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.23539823293685913
+      Pitch: 0.43539881706237793
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 1.5790610313415527
+      Yaw: 0.9190611839294434
     Saved: ~
 Window Geometry:
   Displays:
@@ -392,5 +392,5 @@ Window Geometry:
   Views:
     collapsed: false
   Width: 1080
-  X: 43
+  X: 0
   Y: 0

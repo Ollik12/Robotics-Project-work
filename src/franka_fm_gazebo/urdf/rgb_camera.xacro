@@ -62,7 +62,7 @@
       <child link="${camera_optical_link_name}" />
       <!-- rotate into optical frame (z forward, x right, y down),
            problem is that camera is spawned so that it points along x axis -->
-      <origin xyz="0 0 0" rpy="${pi} -${pi} -${pi/2}" />
+      <origin xyz="0 0 0" rpy="${pi} -${pi} -${pi}" />
     </joint>
 
     <!-- Gazebo sensor -->

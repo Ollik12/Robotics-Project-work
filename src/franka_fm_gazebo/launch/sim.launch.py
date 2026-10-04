@@ -231,6 +231,14 @@ def generate_launch_description():
         output='screen',
     )
 
+    joint_trajectory_controller = Node(
+        package='controller_manager',
+        executable='spawner',
+        arguments=['joint_trajectory_controller', '--inactive'],
+        parameters=[controllers],
+        output='screen',
+    )
+
     # CRISP cartesian_impedance_controller
     cartesian_impedance_controller = Node(
         package="controller_manager",
@@ -256,10 +264,11 @@ def generate_launch_description():
         output="screen",
     )
 
-    gripper_controller = Node(
+    gripper_position_controller = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=["gripper_controller"],
+        arguments=[
+            "gripper_position_controller"],
         parameters=[controllers],
         output="screen",
     )
@@ -280,10 +289,11 @@ def generate_launch_description():
         rviz_node,
         spawn,
         joy_node,
+        joint_trajectory_controller,
         cartesian_impedance_controller,
         pose_broadcaster,
         twist_broadcaster,
-        gripper_controller,
+        gripper_position_controller,
         RegisterEventHandler(
             OnShutdown(
                 on_shutdown=[
