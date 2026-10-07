@@ -21,18 +21,16 @@ The FR3 can be teleoperated using a PS5 DualSense controller.
 * **Left stick horizontal (X)** → Cartesian **Y** → left / right
 * **Right stick vertical (Y)** → Cartesian **Z** → up / down
 
-### Known Issue
-
-The gripper's `joint1` is controlled correctly, but in Gazebo `joint2` does not properly mimic the commanded movement. As a result, the gripper does not behave correctly in the Gazebo simulation.
-
-The corresponding joint movement works as expected in RViz.
-
 Start the simulation first, then launch the teleoperation node in a separate terminal:
 ```
 ros2 run franka_fm_teleop ps5_teleop_node
 ```
 The teleoperation node sends Cartesian motion commands to the robot through the ROS 2 control architecture.
 
+Stream teleop commands for CRISP using `--crisp-teleop` argument:
+```
+ros2 run franka_fm_teleop ps5_teleop_node --crisp-teleop
+```
 
 ## Keyboard teleoperation
 

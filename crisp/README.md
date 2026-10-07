@@ -140,12 +140,15 @@ Once you have successfully recorded dataset and setup the hf CLI authentication,
 ```bash
 hf upload <username>/<repo-id> . --repo-type=dataset
 ```
+### Example dataset
+
+An example dataset recorded with this setup can be found from [fr3-gz](https://huggingface.co/datasets/iikkao/fr3-gz)
 
 ## 📝 TODO:
 - Implement CRISP teleoperation nodes for other devices such as HTC Vive, 3D Mouse, keyboard etc. / whatever device we will use for teleoperating the real Franka in the future
 - Check gripper observation state (why it stays at value 1 in all datasets)
-- Improve data collection workflow and maybe home pos, surface, cube place could vary slightly between episodes
-    - Add some random pos generation wtih small range
+- Improve data collection workflow and maybe home pos, surface, cube position could vary between episodes
+    - Add random pos generation with small range
     - Robot reset node improvement
 
 # Architecture idea:
