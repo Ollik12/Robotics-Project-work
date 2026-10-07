@@ -214,10 +214,28 @@ def generate_launch_description():
         output="screen",
     )
 
+    wrist_camera_info_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/wrist_camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo"
+        ],
+        output="screen",
+    )
+
     side_camera_bridge = Node(
         package="ros_gz_image",
         executable="image_bridge",
         arguments=['/side_camera/image'],
+        output="screen",
+    )
+
+    side_camera_info_bridge = Node(
+        package="ros_gz_bridge",
+        executable="parameter_bridge",
+        arguments=[
+            "/side_camera/camera_info@sensor_msgs/msg/CameraInfo@gz.msgs.CameraInfo"
+        ],
         output="screen",
     )
 
@@ -283,7 +301,9 @@ def generate_launch_description():
         joint_state_broadcaster,
         clock_bridge,
         wrist_camera_bridge,
+        wrist_camera_info_bridge,
         side_camera_bridge,
+        side_camera_info_bridge,
         gazebo_launch,
         robot_state_publisher,
         rviz_node,

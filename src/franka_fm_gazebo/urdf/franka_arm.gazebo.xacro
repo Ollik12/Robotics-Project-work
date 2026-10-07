@@ -85,7 +85,7 @@
 
     <!-- RGB camera -->
     <xacro:include filename="$(find franka_fm_gazebo)/urdf/rgb_camera.xacro" />
-    <xacro:rgb_camera parent_link="$(arg robot_type)_link7" camera_link_name="$(arg robot_type)_camera_link"
-      camera_optical_link_name="$(arg robot_type)_camera_link_optical" />
+    <xacro:rgb_camera parent_link="$(arg robot_type)_link7" camera_link_name="wrist_camera_link"
+      camera_optical_link_name="wrist_camera_link_optical" />
 
 </robot>

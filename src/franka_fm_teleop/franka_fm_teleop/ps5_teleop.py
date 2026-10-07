@@ -1,4 +1,5 @@
 import sys
+import copy
 
 import rclpy
 from rclpy.node import Node
@@ -7,12 +8,23 @@ from sensor_msgs.msg import Joy
 from geometry_msgs.msg import PoseStamped
 from std_msgs.msg import Float64MultiArray, Float32
 from rclpy.qos import qos_profile_sensor_data
+from std_srvs.srv import Trigger
+
 
 
 class PS5TeleopNode(Node):
 
     def __init__(self):
         super().__init__("ps5_teleop_node")
+
+        self.home_pose = PoseStamped()
+        self.home_pose.pose.position.x = 0.31
+        self.home_pose.pose.position.y = 0.0
+        self.home_pose.pose.position.z = 0.486
+        self.home_pose.pose.orientation.x = 1.0
+        self.home_pose.pose.orientation.y = 0.0
+        self.home_pose.pose.orientation.z = 0.0
+        self.home_pose.pose.orientation.w = 0.0
 
         self._use_crisp_teleop = False
 
@@ -35,7 +47,7 @@ class PS5TeleopNode(Node):
         self.deadzone = 0.1
         self.trans_speed = 0.1       # m/s
         self.rot_speed = 0.2         # rad/s
-        self.update_rate = 100.0 # Hz
+        self.update_rate = 30.0 # Hz
 
         # Joystick state
         self.joy_axes = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]  # [left_stick_x, left_stick_y, l2_axis, r2_axis, right_stick_x, right_stick_y]
@@ -83,7 +95,33 @@ class PS5TeleopNode(Node):
             self.update,
         )
 
+        # Reset service to sync the teleop pose after robot reset
+        self.reset_service = self.create_service(
+            Trigger,
+            "/reset_teleop",
+            self.reset_teleop
+        )
+
         self.get_logger().info("Teleop node started.")
+
+    def reset_teleop(self, request, response):
+
+        self.target_pose = copy.deepcopy(self.home_pose)
+
+        # Reset gripper state if appropriate
+        self.gripper_value = 1.0
+
+        response.success = True
+        response.message = "Teleop state reset"
+
+        self.get_logger().info(
+            f"Reset target pose: "
+            f"x={self.target_pose.pose.position.x}, "
+            f"y={self.target_pose.pose.position.y}, "
+            f"z={self.target_pose.pose.position.z}"
+        )
+
+        return response
 
     def joy_callback(self, msg: Joy):
         # Left stick
