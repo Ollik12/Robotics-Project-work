@@ -18,7 +18,20 @@ cd crisp
 git clone git@github.com:learnsyslab/crisp_gym.git
 ```
 
-## 3. Apply `record_functions.py` patch
+## 3. Access Pixi shell and test installation
+
+Access the CRISP Pixi shell from `crisp/` directory with:
+```bash
+pixi shell -e jazzy-lerobot
+```
+
+Test that the installation was successful. These should not print anything:
+```bash
+python -c "import crisp_gym"
+python -c "import crisp_py"
+```
+
+## 4. Apply `record_functions.py` patch
 
 `patches/` directory contains `record_functions.py` which is modified version from the one that comes with `crisp_gym`. There was a small bug and it has been fixed on that file. Replace `crisp_gym/crisp_gym/record/record_functions.py` with `patches/record_functions.py` file.
 
@@ -29,19 +42,6 @@ gripper = leader.gripper.value if leader.gripper is not None else 0.0
 to
 ```
 gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.0
-```
-
-## 4. Access Pixi shell and test installation
-
-Access the CRISP Pixi shell with:
-```bash
-pixi shell -e jazzy-lerobot
-```
-
-Test that the installation was successful. These should not print anything:
-```bash
-python -c "import crisp_gym"
-python -c "import crisp_py"
 ```
 
 ## Teleoperation with CRISP
@@ -131,7 +131,8 @@ And paste the token value when prompted
 
 ### 1. Create dataset repo to HF hub
 
-### 2. Once you have successfully recorded dataset and setup the hf CLI authentication, you can copy the data set from
+### 2. Copy dataset (optional)
+Once you have successfully recorded dataset and setup the hf CLI authentication, you can copy the data set from
 `/home/<username>/.cache/huggingface/lerobot` to e.g. `/home/<username>`, open terminal in that directory
 
 ### 3. Push data to HF repo
