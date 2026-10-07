@@ -24,6 +24,10 @@ services:
       # Force gz-transport discovery over loopback; container multicast is
       # unreliable, which otherwise breaks inter-process world discovery.
       GZ_IP: 127.0.0.1
+      # ROS_DOMAIN_ID is used to isolate ROS2 nodes from other ROS2 nodes on the same network.
+      ROS_DOMAIN_ID: 100
+      # RMW_IMPLEMENTATION is used to select the ROS2 middleware implementation. CycloneDDS is used here for better performance and reliability.
+      RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
     cap_add:
       - SYS_NICE
     ulimits:

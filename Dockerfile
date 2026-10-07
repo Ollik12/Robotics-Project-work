@@ -78,6 +78,7 @@ RUN sudo apt-get update \
         ros-jazzy-teleop-twist-keyboard \
         ros-jazzy-joy \
         ros-jazzy-teleop-twist-joy \
+        ros-jazzy-rmw-cyclonedds-cpp \
     && sudo apt-get clean \
     && sudo rm -rf /var/lib/apt/lists/*
 
