@@ -1,7 +1,7 @@
 # CRISP Setup
 
 > [!NOTE]
-> `crisp_gym` will run inside Pixi environment with dedicated Robostack ROS2 version. Therefore, setup/run crisp outside the Franka Docker environment. CRISP and the Franka Docker ROS will communicate with each other via same `ROS_DOMAIN_ID`.
+> `crisp_gym` will run inside Pixi environment with dedicated Robostack ROS2 version. Therefore, setup/run crisp outside the Franka Docker environment. CRISP and the Franka Docker ROS will communicate with each other via same `ROS_DOMAIN_ID` and using `rmw_cyclonedds_cpp`.
 
 ## 1. Install Pixi
 
@@ -16,63 +16,22 @@ Navigate to `crisp` directory and clone the `crisp_gym` repository
 ```bash
 cd crisp
 git clone git@github.com:learnsyslab/crisp_gym.git
-cd crisp_gym
 ```
 
-## 3. Create `set_env.sh` script
+## 3. Apply `record_functions.py` patch
 
-Navigate to `scripts` directory inside `crisp_gym`
-```bash
-cd scripts
-touch set_env.sh
+`patches/` directory contains `record_functions.py` which is modified version from the one that comes with `crisp_gym`. There was a small bug and it has been fixed on that file. Replace `crisp_gym/crisp_gym/record/record_functions.py` with `patches/record_functions.py` file.
+
+Issue was that the original file tried to access `gripper.value` but the `TeleopStreamedPose` class has property `last_gripper`. So I changed `line 78`:
+```
+gripper = leader.gripper.value if leader.gripper is not None else 0.0
+```
+to
+```
+gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.0
 ```
 
-Add the following content into the script:
-```bash
-export GIT_LFS_SKIP_SMUDGE=1  
-export SVT_LOG=1  
-export ROS_DOMAIN_ID=100
-```
-
-## 4. Modify `pixi.toml`
-
-Find `[feature.lerobot.pypi-dependencies]` from `pixi.toml` file and make it similar to this:
-```toml
-[feature.lerobot.pypi-dependencies]
-# === Working version ===
-lerobot = { git = "https://github.com/huggingface/lerobot", rev = "dacd1d7f5c719c3e56d7b7154a751bef6d5bd23c", extras = ["smolvla"]}
-# === Newer version ===
-# lerobot = { git = "https://github.com/huggingface/lerobot", rev = "74690e3f56a90b6ea314afbfb3b801a3d842a005", extras = ["smolvla"]}
-# === Local version ===
-# lerobot = { path = "../clare_rebuttal/lerobot_lsy/", editable = true }
-```
-
-We use ROS2 Jazzy, so configure also:
-```toml
-[environments]
-dev = { features = ["dev"] }
-humble = { features = ["humble"] }
-humble-lerobot = { features = ["humble", "lerobot", "dev"] }
-lerobot = { features = ["lerobot"] }
-jazzy = { features = ["jazzy"] }
-jazzy-lerobot = { features = ["jazzy", "lerobot", "dev"] }
-```
-
-## 5. Add `crisp_py` to dependencies
-
-`crisp_py` can be added to dependencies with:
-```bash
-pixi add --pypi crisp-python
-```
-
-## 6. Install `crisp_gym`
-
-Install Pixi environment with:
-```bash
-GIT_LFS_SKIP_SMUDGE=1 pixi install -e jazzy-lerobot
-```
-
-## 7. Access Pixi shell and test installation
+## 4. Access Pixi shell and test installation
 
 Access the CRISP Pixi shell with:
 ```bash
@@ -90,19 +49,6 @@ python -c "import crisp_py"
 > [!NOTE]
 > This currently works only with PS5 teleoperation but will be implemented for other teleoperation devices too (HTC Vive, keyboard etc.). This is currently just a small script/PoC implementation which verifies that Gazebo Franka can be controlled with CRISP.
 
-### 1. Set `ROS_DOMAIN_ID`
-(Fix: Docker environment should be started with ROS_DOMAIN_ID=100)
-
-Currently Docker environment has no `ROS_DOMAIN_ID`, but the Pixi ROS2 Jazzy is started with `ROS_DOMAIN_ID=100`. We can set our Docker environment to the same domain. In Docker terminal run:
-```bash
-export ROS_DOMAIN_ID=100
-```
-
-Alternatively, you can unset the Pixi `ROS_DOMAIN_ID` with:
-```bash
-unset ROS_DOMAIN_ID
-```
-
 ### 2. Copy config
 
 Copy the config `franka_fm.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory
@@ -113,7 +59,6 @@ In Docker terminal run the Gazebo simulation environment with:
 ```bash
 ros2 launch franka_fm_gazebo sim.launch.py
 ```
-
 
 ### 4. Run PS5 teleop node
 
@@ -136,12 +81,71 @@ Target initialized
 Teleop is ready
 ```
 
+## 6. Record LeRobot data
+
+### 1. In Docker terminal run the Gazebo simulation environment with:
+```bash
+ros2 launch franka_fm_gazebo sim.launch.py
+```
+### 2. In another Docker terminal launch PS5 teleop node with `--crisp-teleop` argument
+```bash
+ros2 run franka_fm_teleop ps5_teleop_node --crisp-teleop
+```
+
+### 3. In Pixi/CRISP terminal navigate to `crisp/src/record` directory and run `record_teleop.py`
+
+Script accepts multiple arguments but here is one example for testing
+
+```bash
+python record_teleop.py --tasks 'Pick the green cube and place it on the blue surface' --fps 25 --num-episodes 1 
+```
+By running that, the script should initialize the recording and waits until user presses `r` to start the teleop and recording. By pressing `r` again, it asks whether
+the user wants to save/delete the recorded episode by pressing `s`/`d`. Press `s` and the episode should be saved. 
+
+Script saves the episode(s) automatically into `/home/<username>/.cache/huggingface/lerobot` directory. 
+
+If you want to record episodes and push them into hugging face you must give arguments `--repo-id <username>/<repo-id>` and `--push-to-hub true`. However, that is not mandatory
+since the episodes can be saved locally and pushed into hugging face hub afterwards.
+
+## 7. Hugging Face hub CLI configuration
+
+### 1. Install hf CLI with:
+
+```
+curl -LsSf https://hf.co/cli/install.sh | bash
+```
+
+### 2. Create Access Token
+
+Login to [Hugging Face](https://huggingface.co)
+
+Go to Settings > Access Token and create new access token and copy the value
+
+From terminal use
+```bash
+hf auth login
+```
+And paste the token value when prompted
+
+## 8. Push datasets manually into HF hub
+
+### 1. Create dataset repo to HF hub
+
+### 2. Once you have successfully recorded dataset and setup the hf CLI authentication, you can copy the data set from
+`/home/<username>/.cache/huggingface/lerobot` to e.g. `/home/<username>`, open terminal in that directory
+
+### 3. Push data to HF repo
+
+```bash
+hf upload <username>/<repo-id> . --repo-type=dataset
+```
+
 ## 📝 TODO:
 - Implement CRISP teleoperation nodes for other devices such as HTC Vive, 3D Mouse, keyboard etc. / whatever device we will use for teleoperating the real Franka in the future
-- Implement script with teleop and dataset recording functionality using `crisp_gym` `RecordingManager`. Similar to `crisp_gym/crisp_gym/scripts/record_lerobot_format_leader_follower.py`
-- Include image topics in dataset recorder script (i.e. include cameras in CRISP environment config)
-- Record dataset using Gazebo and CRISP and successfully push it into Hugging Face dataset repository
-
+- Check gripper observation state (why it stays at value 1 in all datasets)
+- Improve data collection workflow and maybe home pos, surface, cube place could vary slightly between episodes
+    - Add some random pos generation wtih small range
+    - Robot reset node improvement
 
 # Architecture idea:
 ![Environment architecture](/crisp/images/franka_fm_crisp.png)

@@ -26,6 +26,8 @@ previous_pose = teleop.last_pose
 print("Environment created")
 print("Target initialized")
 
+env.wait_until_ready()
+
 if teleop.is_ready():
     print("Teleop is ready")
     while True:
