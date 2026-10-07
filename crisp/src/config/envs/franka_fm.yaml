@@ -11,5 +11,17 @@ gripper_config:
   min_value: 0
   max_value: 1
 
-camera_configs: []
+camera_configs:
+  - camera_name: "wrist_camera"
+    camera_frame: "wrist_camera_link"
+    resolution: [480, 640]
+    camera_color_image_topic: "/wrist_camera/image"
+    camera_color_info_topic: "camera/wrist_camera/camera_info"
+
+  - camera_name: "side_camera"
+    camera_frame: "side_camera_link"
+    resolution: [480, 640]
+    camera_color_image_topic: "/side_camera/image"
+    camera_color_info_topic: "/side_camera/camera_info"
+
 sensor_configs: []
