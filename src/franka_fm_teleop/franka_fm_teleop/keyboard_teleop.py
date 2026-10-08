@@ -8,13 +8,37 @@ import rclpy
 from rclpy.node import Node
 
 from geometry_msgs.msg import PoseStamped
-from std_msgs.msg import Float64MultiArray
+from std_msgs.msg import Float64MultiArray, Float32
+from rclpy.qos import qos_profile_sensor_data
+from std_srvs.srv import Trigger
 
 
 class KeyboardTeleopNode(Node):
 
     def __init__(self):
         super().__init__("keyboard_teleop_node")
+
+        self._use_crisp_teleop = False
+
+        if '--crisp-teleop' in sys.argv:
+            # Publish for CRISP teleop
+            self._gripper_topic = "/phone_gripper"
+            self._target_pose_topic = "/phone_pose"
+            self._gripper_open_value = 1.0
+            self._gripper_close_value = 0.0
+            self._use_crisp_teleop = True
+
+            # Initially 0 = close
+            self._crisp_gripper_msg_value = 0.0
+            self._gripper_msg_type = Float32
+
+        else:
+            # Publish straight to the robot for Franka teleop
+            self._gripper_topic = "/gripper_position_controller/commands"
+            self._target_pose_topic = "/target_pose"
+            self._gripper_open_value = 0.035
+            self._gripper_close_value = 0.0
+            self._gripper_msg_type = Float64MultiArray
 
         # Parameters
         self.speed = 0.10          # m/s
@@ -56,21 +80,28 @@ class KeyboardTeleopNode(Node):
             PoseStamped,
             "/current_pose",
             self.ee_pose_callback,
-            10,
+            qos_profile=qos_profile_sensor_data,
         )
 
         # Target pose
         self.target_pose_pub = self.create_publisher(
             PoseStamped,
-            "/target_pose",
+            self._target_pose_topic,
             10,
         )
 
         # Gripper
         self.gripper_pub = self.create_publisher(
-            Float64MultiArray,
-            "/gripper_controller/commands",
-            10,
+            self._gripper_msg_type,
+            self._gripper_topic,
+            qos_profile=qos_profile_sensor_data,
+        )
+
+        # Reset service to sync teleop pose after robot reset
+        self.reset_service = self.create_service(
+            Trigger,
+            "/reset_teleop",
+            self.reset_teleop,
         )
 
         # Save terminal settings
@@ -111,6 +142,25 @@ class KeyboardTeleopNode(Node):
         print("Press SPACE to enable teleoperation.")
         print("======================================")
         print("")
+
+    def reset_teleop(self, request, response):
+        """Reset the teleoperation state."""
+
+        if self.target_pose is not None:
+            # Keep the current robot pose as the target pose
+            # so teleoperation remains synchronized.
+            self.target_pose = PoseStamped()
+            self.target_pose.header = self.target_pose.header
+            self.target_pose.pose = self.target_pose.pose
+
+        self.velocity_x = 0.0
+        self.velocity_y = 0.0
+        self.velocity_z = 0.0
+
+        response.success = True
+        response.message = "Teleop state reset"
+
+        return response
 
     def ee_pose_callback(self, msg):
         """Initialize target pose from current robot pose."""
@@ -180,14 +230,28 @@ class KeyboardTeleopNode(Node):
 
         # Gripper
         elif key == "o":
+            # if we want to use crisp teleop
+            if self._use_crisp_teleop:
+                # CRISP: open = 1.0
+                self._crisp_gripper_msg_value = (
+                    self._gripper_open_value
+                )
 
-            self.gripper_open = True
-            self.gripper_close = False
+            else:
+                self.gripper_open = True
+                self.gripper_close = False
 
         elif key == "p":
 
-            self.gripper_close = True
-            self.gripper_open = False
+            if self._use_crisp_teleop:
+                # CRISP: close = 0.0
+                self._crisp_gripper_msg_value = (
+                    self._gripper_close_value
+                )
+
+            else:
+                self.gripper_close = True
+                self.gripper_open = False
 
     def key_active(self, key, now):
         """Check whether a movement key is still active."""
@@ -230,6 +294,43 @@ class KeyboardTeleopNode(Node):
         # No robot pose yet
         if self.target_pose is None:
             return
+
+        # ==========================================================
+        # CRISP TELEOP
+        # ==========================================================
+        #
+        # CRISP expects the pose and gripper state to be streamed
+        # continuously, even when the keyboard teleoperation is
+        # disabled.
+        #
+        if self._use_crisp_teleop and not self.enabled:
+
+            # Update timestamp
+            self.target_pose.header.stamp = (
+                self.get_clock().now().to_msg()
+            )
+
+            # Publish pose
+            self.target_pose_pub.publish(
+                self.target_pose
+            )
+
+            # Publish gripper state
+            gripper_msg = Float32()
+
+            gripper_msg.data = float(
+                self._crisp_gripper_msg_value
+            )
+
+            self.gripper_pub.publish(
+                gripper_msg
+            )
+
+            return
+
+        # ==========================================================
+        # NORMAL FRANKA TELEOP
+        # ==========================================================
 
         # Teleoperation disabled
         if not self.enabled:
@@ -327,16 +428,42 @@ class KeyboardTeleopNode(Node):
             self.target_pose
         )
 
-        # Gripper
+        # ==========================================================
+        # GRIPPER
+        # ==========================================================
+
+        if self._use_crisp_teleop:
+
+            # CRISP gripper state is continuously published.
+            gripper_msg = Float32()
+
+            gripper_msg.data = float(
+                self._crisp_gripper_msg_value
+            )
+
+            self.gripper_pub.publish(
+                gripper_msg
+            )
+
+            return
+
+        # Normal Franka gripper:
+        # only publish when O/P was pressed.
         if self.gripper_close or self.gripper_open:
 
             gripper_msg = Float64MultiArray()
 
             if self.gripper_close:
-                gripper_msg.data = [-0.1]
+
+                gripper_msg.data = [
+                    self._gripper_close_value
+                ]
 
             elif self.gripper_open:
-                gripper_msg.data = [0.05]
+
+                gripper_msg.data = [
+                    self._gripper_open_value
+                ]
 
             self.gripper_pub.publish(
                 gripper_msg

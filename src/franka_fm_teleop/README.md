@@ -50,6 +50,6 @@ The FR3 can be also teleoperated using a keyboard
 Start the simulation first, then launch the teleoperation node in a separate terminal:
 ```
 source install/setup.bash 
-ros2 run franka_fm_teleop keyboard_teleop_node
+ros2 run franka_fm_teleop keyboard_teleop_node --crisp-teleop
 ```
 The teleoperation node sends Cartesian motion commands to the robot through the ROS 2 control architecture with keyboard inputs
