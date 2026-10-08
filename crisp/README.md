@@ -150,6 +150,13 @@ An example dataset recorded with this setup can be found from [fr3-gz](https://h
 - Improve data collection workflow and maybe home pos, surface, cube position could vary between episodes
     - Add random pos generation with small range
     - Robot reset node improvement
+    
+## Issues:
+- CRISP ROS2 is using older controller_manager 4.25 while the Docker ROS2 has 4.48. Therefore we cannot use e.g. robot.home() because it requires controller switching.
+- CRISP side homing would be useful because that could be called immediately after stopping the episode recording from CRISP recording script.
+- There is a separate ROS2 package `franka_fm_reset` which can be used for resetting the robot and Gazebo between episodes, but when it has finished the homing and switches back to cartesian controller the CRISP side somehow publishes the old target position for the controller and the robot is controlled there immediately.
+- After reset, the teleop node starts publishing the home position so it should update to the CRISP TeleopStreamedPose also.
+- Proposed solution: downgrade Docker controller_manager / investigate what causes that the CRISP side does not update the target position after the reset node is run.
 
 # Architecture idea:
 ![Environment architecture](/crisp/images/franka_fm_crisp.png)
