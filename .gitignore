@@ -10,6 +10,7 @@ ros2_robotiq_gripper/
 serial/
 zed_description/
 crisp_gym/
+openpi/
 
 *.log
 .env

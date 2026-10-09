@@ -20,6 +20,7 @@ RUN apt-get update && \
         nano \
         iputils-ping \
         openssh-client \
+        python3-pip \
         python3-colcon-argcomplete \
         python3-colcon-common-extensions \
         sudo \

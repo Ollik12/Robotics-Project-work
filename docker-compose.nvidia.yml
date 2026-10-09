@@ -15,6 +15,7 @@ services:
     stdin_open: true
     volumes:
       - ./src:/ros2_ws/src
+      - ./openpi-fr3:/ros2_ws/openpi-fr3
       - /tmp/.X11-unix:/tmp/.X11-unix
       - ./limits.conf:/etc/security/limits.conf
       - /dev:/dev
