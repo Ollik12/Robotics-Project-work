@@ -5,8 +5,11 @@ import numpy as np
 
 from sensor_msgs.msg import Image, JointState
 from cv_bridge import CvBridge
+from std_msgs.msg import Float32MultiArray
 
 from openpi_client import websocket_client_policy
+from geometry_msgs.msg import PoseStamped
+from scipy.spatial.transform import Rotation
 
 
 class OpenPiInference(Node):
@@ -50,13 +53,25 @@ class OpenPiInference(Node):
             10,
         )
 
+        self.action_pub = self.create_publisher(
+            Float32MultiArray,
+            "/pi05/actions",
+            10,
+        )
+
         # Run inference periodically.
         self.timer = self.create_timer(
-            1.0,
+            0.5,
             self.inference_callback,
         )
 
         self.prompt = "pick up the object"
+
+        self.current_pose = None
+
+        self.create_subscription(
+            PoseStamped, "/current_pose", self.current_pose_callback, 10
+        )
 
     def side_camera_callback(self, msg):
         self.side_image = self.bridge.imgmsg_to_cv2(
@@ -73,49 +88,35 @@ class OpenPiInference(Node):
     def joint_state_callback(self, msg):
         self.joint_position = np.asarray(
             msg.position[2:9],
-            dtype=np.float64,
+            dtype=np.float32,
         )
         
         self.gripper_position = np.asarray(
             [msg.position[0]],
-            dtype=np.float64,
+            dtype=np.float32,
         )
 
     def inference_callback(self):
-        # Don't run until all observations exist.
-        if self.side_image is None:
-            self.get_logger().info(
-                "Waiting for side camera..."
-            )
-            return
-
-        if self.wrist_image is None:
-            self.get_logger().info(
-                "Waiting for wrist camera..."
-            )
-            return
-
-        if self.joint_position is None:
-            self.get_logger().info(
-                "Waiting for joint state..."
-            )
-            return
-
-        if self.gripper_position is None:
-            self.get_logger().info(
-                "Waiting for gripper state..."
-            )
+        if (
+            self.side_image is None
+            or self.wrist_image is None
+            #or self.joint_position is None
+            or self.gripper_position is None
+            or self.current_pose is None
+        ):
             return
 
         observation = {
             "observation/image": self.side_image,
             "observation/wrist_image": self.wrist_image,
             "observation/state": np.concatenate([
-                self.joint_position,
+                self.current_pose,
                 self.gripper_position,
             ]),
             "prompt": self.prompt,
         }
+
+
 
         self.get_logger().info(
             "Sending observation to OpenPI..."
@@ -123,17 +124,35 @@ class OpenPiInference(Node):
 
         try:
             result = self.policy.infer(observation)
-
-            actions = result["actions"]
+            actions = np.asarray(result["actions"], dtype=np.float32)
 
             self.get_logger().info(
                 f"Received action chunk: {actions.shape}"
             )
+            #self.get_logger().info(f"Action chunk:\n{actions}")
+
+            msg = Float32MultiArray()
+            msg.data = actions.flatten().tolist()
+            self.action_pub.publish(msg)
 
         except Exception as e:
             self.get_logger().error(
                 f"OpenPI inference failed: {e}"
             )
+
+    def pose_to_xyz_rpy(self, msg):
+        p = msg.pose.position
+        q = msg.pose.orientation
+
+        rpy = Rotation.from_quat([q.x, q.y, q.z, q.w]).as_euler("xyz")
+
+        return np.array(
+            [p.x, p.y, p.z, rpy[0], rpy[1], rpy[2]],
+            dtype=np.float32,
+        )
+
+    def current_pose_callback(self, msg):
+        self.current_pose = self.pose_to_xyz_rpy(msg)
 
 
 def main(args=None):
@@ -146,6 +165,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     finally:
+        node.policy._ws.close()
         node.destroy_node()
         rclpy.shutdown()
 
