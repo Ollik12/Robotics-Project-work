@@ -15,8 +15,8 @@
       camera_name:='wrist_camera'
       camera_link_name:='wrist_camera_link'
       camera_optical_link_name:='wrist_camera_link_optical'
-      xyz:='-0.04 0.04 0.1'
-      rpy:='0.19 0 ${pi/4}'
+      xyz:='-0.05 0.05 0.1'
+      rpy:='0 0 ${pi/4}'
     ">
 
     <!-- Physical link so Gazebo keeps it in the tree -->
@@ -76,7 +76,7 @@
           <!-- rotate the camera to point towards z-axis (desired optical axis) -->
           <pose>0 0 0 ${pi/2} -${pi/2} 0</pose>
           <camera>
-            <horizontal_fov>1.047</horizontal_fov>
+            <horizontal_fov>1.35</horizontal_fov>
             <image>
               <width>640</width>
               <height>480</height>

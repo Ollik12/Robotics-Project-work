@@ -3,10 +3,13 @@
 import argparse
 import json
 import logging
-
-
+import sys
+import threading
+from pathlib import Path
 import numpy as np
+
 import rclpy
+from rclpy.executors import SingleThreadedExecutor
 
 import crisp_gym  # noqa: F401
 from crisp_gym.config.home import HomeConfig
@@ -22,7 +25,10 @@ from crisp_gym.util import prompt
 from crisp_gym.util.lerobot_features import get_features
 from crisp_gym.util.setup_logger import setup_logging
 
-ROBOT_HOME_POS = [0.31, 0.0, 0.486]
+SRC_DIR = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SRC_DIR))
+
+from reset_service.crisp_reset_service import CrispResetService  # noqa: E402
 
 def main():
     """Record data in Lerobot Format using a leader-follower teleoperation setup."""
@@ -104,10 +110,20 @@ def main():
 
     try:
 
+        rclpy.init()
         env = ManipulatorCartesianEnv(config=env_config)
 
+        # Initialize the CRISP reset service to sync CRISP after separate reset
+        reset_service = CrispResetService(env=env)
+
+        executor = SingleThreadedExecutor()
+        executor.add_node(reset_service)
+
+        service_thread = threading.Thread(target=executor.spin, daemon=True)
+        service_thread.start()
+
         leader = TeleopStreamedPose()
-        logger.info("Using streamed teleop for the leader robot.")
+        logger.info("Using streamed teleop for teleop.")
 
         keys_to_ignore = []
         features = get_features(env=env, ignore_keys=keys_to_ignore)
@@ -144,21 +160,11 @@ def main():
         def on_start():
             """Hook function to be called when starting a new episode."""
             env.robot.reset_targets()
-            
+
 
         def on_end():
             """Hook function to be called when stopping the recording."""
-
-            env.robot.reset_targets()
-            env.gripper.open()
-            env.robot.wait_until_ready()
-
-            # TEMPORARY FIX!
-            # Robot teleop is reset with franka_fm_reset, but this ensures that the CRISP side
-            # also has the same target pose. 
-            # Will be removed once the reset is handled in a more robust way.
-            env.robot.set_target(position=ROBOT_HOME_POS)
-
+            
         with recording_manager:
             while not recording_manager.done():
                 logger.info(
@@ -203,7 +209,11 @@ def main():
 
     finally:
         if rclpy.ok():
+            executor.shutdown()
+            service_thread.join(timeout=2.0)
+            reset_service.destroy_node()
             rclpy.shutdown()
+
 
 
 if __name__ == "__main__":

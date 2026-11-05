@@ -8,6 +8,7 @@ from rclpy.action import ActionClient
 from control_msgs.action import FollowJointTrajectory
 from trajectory_msgs.msg import JointTrajectoryPoint
 from std_srvs.srv import Trigger
+import random
 
 """
 Reset Node
@@ -55,8 +56,40 @@ class ResetNode(Node):
             "/reset_teleop"
         )
 
+        self.crisp_reset_client = self.create_client(
+            Trigger,
+            "/crisp/reset_targets",
+        )
+
         while not self.controller_switch_service.wait_for_service(timeout_sec=1.0):
             self.get_logger().info("Waiting for controller switch service...")
+
+    def syncronize_crisp(self):
+        """
+        Calls the CRISP reset service to synchronize the targets.
+        """
+        self.get_logger().info("Calling CRISP reset service to synchronize targets...")
+
+        if not self.crisp_reset_client.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error("CRISP reset service not available.")
+            return False
+
+        request = Trigger.Request()
+
+        future = self.crisp_reset_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+
+        response = future.result()
+
+        if response is None or not response.success:
+            self.get_logger().error(
+                f"Failed to synchronize CRISP targets: {response.message if response else 'No response'}"
+            )
+            return False
+
+        self.get_logger().info("CRISP targets synchronized.")
+
+        return True
 
     def switch_controller(self, activate: str, deactivate: str):
         """
@@ -121,6 +154,11 @@ class ResetNode(Node):
         return True
 
     def reset_cube(self):
+
+        x = 0.1 + random.uniform(-0.05, 0.05)
+        y = 0.35 + random.uniform(-0.05, 0.05)
+        z = 1.02
+
         cmd = [
             "gz", "service",
             "-s", "/world/workcell/set_pose",
@@ -129,7 +167,7 @@ class ResetNode(Node):
             "--timeout", "5000",
             "--req",
             "name: 'pick_place_box', "
-            "position: {x: 0.1, y: 0.35, z: 1.02}, "
+            f"position: {{x: {x}, y: {y}, z: {z}}}, "
             "orientation: {x: 0, y: 0, z: 0, w: 1}"
         ]
 
@@ -148,6 +186,44 @@ class ResetNode(Node):
             return False
 
         self.get_logger().info("Cube reset.")
+        return True
+
+    def reset_surface(self):
+        """
+        Resets the surface position.
+        """
+
+        x = 0.2 + random.uniform(-0.05, 0.05)
+        y = -0.35 + random.uniform(-0.05, 0.05)
+        z = 1.0025
+
+        cmd = [
+            "gz", "service",
+            "-s", "/world/workcell/set_pose",
+            "--reqtype", "gz.msgs.Pose",
+            "--reptype", "gz.msgs.Boolean",
+            "--timeout", "5000",
+            "--req",
+            "name: 'blue_place_surface', "
+            f"position: {{x: {x}, y: {y}, z: {z}}}, "
+            "orientation: {x: 0, y: 0, z: 0, w: 1}"
+        ]
+
+        self.get_logger().info("Resetting surface position...")
+
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True
+        )
+
+        if result.returncode != 0:
+            self.get_logger().error(
+                f"Failed to reset surface: {result.stderr}"
+            )
+            return False
+
+        self.get_logger().info("Surface reset.")
         return True
 
     def reset_teleop(self):
@@ -191,6 +267,14 @@ class ResetNode(Node):
             self.get_logger().error("Failed to home robot.")
             return False
 
+        if not self.reset_teleop():
+            self.get_logger().error("Failed to reset teleop state.")
+            return False
+
+        if not self.syncronize_crisp():
+            self.get_logger().error("Failed to synchronize CRISP targets.")
+            return False
+
         if not self.switch_controller(
             activate=["cartesian_impedance_controller"],
             deactivate=["joint_trajectory_controller"],
@@ -202,8 +286,8 @@ class ResetNode(Node):
             self.get_logger().error("Failed to reset cube.")
             return False
 
-        if not self.reset_teleop():
-            self.get_logger().error("Failed to reset teleop state.")
+        if not self.reset_surface():
+            self.get_logger().error("Failed to reset surface.")
             return False
 
         self.get_logger().info("Robot reset completed.")
