@@ -22,6 +22,7 @@ make = "*"
 ninja = "*"
 typing_inspect = ">=0.9.0,<0.10"
 libstdcxx-ng = ">=12.2.0"
+empy = "3.3.4.*"
 
 [target.linux.dependencies]
 libgl-devel = "*"

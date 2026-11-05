@@ -1,0 +1,21 @@
+crisp_teleop:
+  ros__parameters:
+
+    # Control
+    update_rate: 30.0
+    trans_speed: 0.05
+    rot_speed: 0.1
+    deadzone: 0.1
+
+    # Safety
+    joy_timeout: 0.2
+
+    # Joystick mapping
+    axis_left_x: 0
+    axis_left_y: 1
+    axis_right_x: 3
+    axis_right_y: 4
+    axis_l2: 2
+    axis_r2: 5
+
+    button_deadman: 4
