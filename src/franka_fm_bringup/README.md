@@ -80,3 +80,25 @@ The launch file starts:
 | O | Open gripper (optional) |
 
 **Safety:** Teleoperation requires holding L1. Release L1 to disable new motion commands. This software deadman is not a safety-rated stop; ensure the robot's emergency stop and safety procedures are available.
+
+# TODO – FR3 Teleoperation & Recording
+
+## 1. Franka Gripper
+
+- [ ] Test `franka_fm_bringup` with `load_gripper:=true`.
+- [ ] Verify that the Franka gripper action servers are available.
+- [ ] Test opening and closing the gripper using ROS 2 CLI and examples from the Franka FCI documentation.
+- [ ] Investigate how `crisp_py.Gripper` can be integrated with Franka's gripper actions.
+
+## 2. Streamed Teleoperation
+
+- [ ] Add a configurable `streamed` mode to `crisp_teleop`.
+- [ ] Publish target poses to `/phone_pose`.
+- [ ] Publish binary gripper commands (0/1) to `/phone_gripper`.
+- [ ] Verify that `TeleopStreamedPose` receives both streams correctly.
+
+## 3. Cameras
+
+- [ ] Identify available cameras in the lab and their interfaces.
+- [ ] Investigate the required ROS 2 drivers/nodes for publishing camera images.
+- [ ] Verify that camera topics can be accessed from the Pixi environment.
