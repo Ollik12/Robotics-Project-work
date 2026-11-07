@@ -24,6 +24,9 @@ typing_inspect = ">=0.9.0,<0.10"
 libstdcxx-ng = ">=12.2.0"
 empy = "3.3.4.*"
 
+[constraints]
+numpy = "<=2.3"
+
 [target.linux.dependencies]
 libgl-devel = "*"
 
@@ -41,14 +44,14 @@ pudb = ">=2025.1.3, <2026"
 
 [feature.lerobot.dependencies]
 pynput = "*"
-rerun-sdk = "=0.22.1"
+#rerun-sdk = "=0.22.1"
 packaging = "<26"
 
 [feature.lerobot.pypi-dependencies]
 # === Working version ===
 # lerobot = { git = "https://github.com/huggingface/lerobot", rev = "dacd1d7f5c719c3e56d7b7154a751bef6d5bd23c", extras = ["smolvla"]}
 # === Newer version ===
-lerobot = { git = "https://github.com/huggingface/lerobot", rev = "74690e3f56a90b6ea314afbfb3b801a3d842a005", extras = ["smolvla", "pi"]}
+lerobot = { git = "https://github.com/huggingface/lerobot", rev = "74690e3f56a90b6ea314afbfb3b801a3d842a005", extras = ["pi"]}
 torch = { version = "==2.7.1", index = "https://download.pytorch.org/whl/cu128" }
 # === Local version ===
 # lerobot = { path = "../clare_rebuttal/lerobot_lsy/", editable = true }
@@ -67,3 +70,4 @@ ros-jazzy-rmw-zenoh-cpp = "*"
 
 [pypi-dependencies]
 crisp_gym = { path = "./crisp_gym", editable = true }
+crisp_python = { path = "./crisp_py", editable = true }

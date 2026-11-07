@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>franka_fm_reset</name>
+  <name>controller_list_bridge</name>
   <version>0.0.0</version>
   <description>TODO: Package description</description>
-  <maintainer email="developer@todo.todo">developer</maintainer>
+  <maintainer email="188858515+iikkaop@users.noreply.github.com">developer</maintainer>
   <license>TODO: License declaration</license>
 
   <test_depend>ament_copyright</test_depend>

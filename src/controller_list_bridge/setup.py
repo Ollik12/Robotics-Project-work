@@ -1,6 +1,6 @@
 from setuptools import find_packages, setup
 
-package_name = 'franka_fm_rec'
+package_name = 'controller_list_bridge'
 
 setup(
     name=package_name,
@@ -24,7 +24,7 @@ setup(
     },
     entry_points={
         'console_scripts': [
-            'bag_recorder_node = franka_fm_rec.bag_recorder:main',
+            'controller_list_bridge = controller_list_bridge.controller_list_bridge:main',
         ],
     },
 )
