@@ -192,14 +192,6 @@ def generate_launch_description():
         'controllers.yaml'
     ])
 
-    # Launch joy_node for joystick control
-    joy_node = Node(
-        package="joy",
-        executable="joy_node",
-        name="joy_node",
-        output="screen",
-    )
-
     clock_bridge = Node(
         package='ros_gz_bridge',
         executable='parameter_bridge',
@@ -315,7 +307,6 @@ def generate_launch_description():
         robot_state_publisher,
         rviz_node,
         spawn,
-        joy_node,
         joint_trajectory_controller,
         cartesian_impedance_controller,
         pose_broadcaster,

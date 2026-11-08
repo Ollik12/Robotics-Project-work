@@ -160,10 +160,12 @@ def main():
         def on_start():
             """Hook function to be called when starting a new episode."""
             env.robot.reset_targets()
+            env.reset()
 
 
         def on_end():
             """Hook function to be called when stopping the recording."""
+            env.robot.home(blocking=False)
             
         with recording_manager:
             while not recording_manager.done():

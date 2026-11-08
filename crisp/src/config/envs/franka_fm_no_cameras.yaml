@@ -1,0 +1,28 @@
+control_frequency: 30.0
+gripper_mode: "absolute_continuous"
+
+cartesian_control_param_config: null
+joint_control_param_config: null
+
+robot_config:
+  robot_type: "franka"
+
+gripper_config:
+  min_value: 0
+  max_value: 1
+
+# camera_configs:
+#   - camera_name: "wrist_camera"
+#     camera_frame: "wrist_camera_link"
+#     resolution: [256, 256]
+#     camera_color_image_topic: "/wrist_camera/image"
+#     camera_color_info_topic: "/wrist_camera/camera_info"
+
+#   - camera_name: "side_camera"
+#     camera_frame: "side_camera_link"
+#     resolution: [256, 256]
+#     camera_color_image_topic: "/side_camera/image"
+#     camera_color_info_topic: "/side_camera/camera_info"
+
+sensor_configs: []
+camera_configs: []

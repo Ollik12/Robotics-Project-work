@@ -13,5 +13,6 @@ robot.home()  # will activate a joint trajectory controller and home the robot
 print(robot.end_effector_pose)
 print(robot.joint_values)
 
+
 # %% Activate cartesian impedance controller
 robot.controller_switcher_client.switch_controller("cartesian_impedance_controller")

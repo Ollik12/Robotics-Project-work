@@ -24,9 +24,6 @@ typing_inspect = ">=0.9.0,<0.10"
 libstdcxx-ng = ">=12.2.0"
 empy = "3.3.4.*"
 
-[constraints]
-numpy = "<=2.3"
-
 [target.linux.dependencies]
 libgl-devel = "*"
 
@@ -44,7 +41,7 @@ pudb = ">=2025.1.3, <2026"
 
 [feature.lerobot.dependencies]
 pynput = "*"
-#rerun-sdk = "=0.22.1"
+rerun-sdk = "=0.22.1"
 packaging = "<26"
 
 [feature.lerobot.pypi-dependencies]

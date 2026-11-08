@@ -6,6 +6,7 @@ crisp_teleop:
     trans_speed: 0.05
     rot_speed: 0.1
     deadzone: 0.1
+    mode: "stream"  # "stream" or "robot"
 
     # Safety
     joy_timeout: 0.2
@@ -19,3 +20,5 @@ crisp_teleop:
     axis_r2: 5
 
     button_deadman: 4
+    button_x: 0
+    button_o: 1
