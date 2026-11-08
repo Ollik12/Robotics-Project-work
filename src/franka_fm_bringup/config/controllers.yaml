@@ -7,7 +7,7 @@
   controller_manager:
     ros__parameters:
       update_rate: 1000
-      thread_priority: 99
+      thread_priority: 97
       overruns:
         manage: false
         print_warnings: false
@@ -27,6 +27,19 @@
       twist_broadcaster:
         type: crisp_controllers/TwistBroadcaster
 
+      franka_robot_state_broadcaster:
+        type: franka_robot_state_broadcaster/FrankaRobotStateBroadcaster
+        state_interfaces:
+          robot_state
+
+
+/**:
+  franka_robot_state_broadcaster:
+    ros__parameters:
+      # Publish rate in Hz for convenience topics (current_pose, joint_states, wrenches, etc.).
+      # Clamped to this controller's update_rate, which defaults to the controller
+      # manager's. The full robot state always publishes at the update rate.
+      convenience_publish_rate: 1000
 
 /**:
   pose_broadcaster:

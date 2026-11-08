@@ -80,6 +80,8 @@ RUN sudo apt-get update \
         ros-jazzy-joy \
         ros-jazzy-teleop-twist-joy \
         ros-jazzy-rmw-cyclonedds-cpp \
+        ros-jazzy-librealsense2 \
+        ros-jazzy-realsense2-camera \
     && sudo apt-get clean \
     && sudo rm -rf /var/lib/apt/lists/*
 

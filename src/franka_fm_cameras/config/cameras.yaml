@@ -1,0 +1,7 @@
+wrist_camera:
+  serial_no: ""
+  color_profile: "640x480x30"
+
+side_camera:
+  serial_no: ""
+  color_profile: "640x480x30"

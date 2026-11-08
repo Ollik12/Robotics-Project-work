@@ -1,0 +1,84 @@
+# Franka FM Cameras
+
+ROS 2 camera bringup package for two Intel RealSense cameras used with the Franka Research 3 (FR3) robot.
+
+## Description
+
+The package launches two RealSense camera nodes using the official `realsense2_camera` ROS 2 driver:
+
+- **Wrist camera:** Mounted near the robot end effector.
+- **Side camera:** Provides an external view of the workspace.
+
+Both cameras are configured to publish RGB images at 640×480 resolution and 30 FPS. Depth streaming is disabled by default.
+
+## Configuration
+
+Camera settings are defined in `config/cameras.yaml`.
+
+```yaml
+wrist_camera:
+  serial_no: ""
+  color_profile: "640x480x30"
+
+side_camera:
+  serial_no: ""
+  color_profile: "640x480x30"
+```
+
+Before using physical cameras, identify their serial numbers:
+
+```bash
+rs-enumerate-devices
+```
+
+Update the `serial_no` values to ensure each camera is assigned to the correct node.
+
+## Usage
+
+### Standalone
+
+Launch both cameras independently:
+
+```bash
+ros2 launch franka_fm_cameras cameras.launch.py
+```
+
+### Franka Bringup
+
+The cameras can also be launched through `franka_fm_bringup` using the `load_cameras` argument:
+
+```bash
+ros2 launch franka_fm_bringup franka_fm.launch.py \
+    robot_ip:=172.16.0.2 \
+    robot_type:=fr3 \
+    load_cameras:=true
+```
+
+By default, `load_cameras` is `false`.
+
+## ROS 2 Topics
+
+The cameras publish RGB images to:
+
+```text
+/wrist_camera/camera/color/image_raw
+/side_camera/camera/color/image_raw
+```
+
+These topics can be used by the CRISP recording environment to collect camera observations.
+
+To verify image publishing:
+
+```bash
+ros2 topic list
+ros2 topic hz /wrist_camera/camera/color/image_raw
+ros2 topic hz /side_camera/camera/color/image_raw
+```
+
+## Dependencies
+
+- ROS 2 Jazzy
+- `realsense2_camera`
+- `librealsense2`
+
+The RealSense SDK and ROS 2 wrapper must be installed before launching the cameras. (They are installed when Docker image is built)
