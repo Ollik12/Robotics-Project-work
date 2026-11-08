@@ -2,7 +2,7 @@
 
 ROS 2 bringup package for the Franka Research 3 (FR3) robot using the CRISP Cartesian Impedance Controller.
 
-The package extends the standard `franka_bringup` launch configuration with custom controller settings.
+The package extends the standard `franka_bringup` launch configuration with custom controller settings and optional Franka Hand support.
 
 ## Description
 
@@ -11,14 +11,43 @@ The `franka_fm.launch.py` launch file starts:
 - **Franka Bringup:** Initializes the robot hardware interface and ROS 2 Control Manager.
 - **Cartesian Impedance Controller:** CRISP controller for Cartesian motion control.
 - **Pose Broadcaster:** Publishes the robot's current end-effector pose.
+- **Franka Gripper (optional):** Launches the official `franka_gripper` action servers for controlling the Franka Hand.
+- **Franka Hand CRISP Adapter (optional):** Launches `franka_hand_crisp_py_adapter`, which translates CRISP gripper commands into actions supported by the official Franka gripper driver.
+
+Both optional gripper components are launched when `load_gripper:=true` is specified.
+
+### Gripper Control
+
+The Franka Hand is controlled through the official `franka_gripper` action servers instead of a ROS 2 position controller.
+
+The `franka_hand_crisp_py_adapter` package provides compatibility with CRISP by subscribing to gripper position commands and forwarding them to the appropriate Franka Hand action servers.
+
+The adapter uses the following interfaces:
+
+| Interface | Description |
+|---|---|
+| `/gripper/gripper_position_controller/commands` | Receives gripper commands from CRISP |
+| `/gripper/joint_states` | Receives/updates gripper joint states |
+| `/gripper/grasp` | Franka Hand grasp action server |
+| `/gripper/homing` | Franka Hand homing action server |
+
+The `gripper_position_controller` does not need to be activated, as the adapter handles incoming commands directly.
 
 ## Usage
 
-Launch the robot with:
+### Launch without gripper
 
 ```bash
 ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3
 ```
+
+### Launch with gripper
+
+```bash
+ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3 load_gripper:=true
+```
+
+This starts the robot controllers, official Franka Hand action servers, and the CRISP gripper adapter.
 
 Ensure the robot is connected and ready before launching.
 

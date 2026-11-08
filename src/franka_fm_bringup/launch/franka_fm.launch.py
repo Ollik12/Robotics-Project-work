@@ -181,6 +181,41 @@ def generate_robot_nodes(context):
             executable="spawner",
             arguments=["pose_broadcaster"],
             output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["joint_trajectory_controller", "--inactive"],
+            output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["twist_broadcaster"],
+            output="screen",
+        ),
+        # Controller list bridge node
+        Node(
+            package="controller_list_bridge",
+            executable="controller_list_bridge",
+            name="controller_list_bridge",
+            output="screen",
+        ),
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=[
+                '--display-config',
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare('franka_fm_bringup'),
+                        'rviz',
+                        'visualize_franka.rviz',
+                    ]
+                ),
+            ],
+            output='screen',
         )
     ]
 
@@ -220,6 +255,15 @@ def generate_robot_nodes(context):
             }.items(),
             condition=IfCondition(LaunchConfiguration('load_gripper')),
         ),
+        # The franka_hand_crisp_py_adapter node is launched only if the load_gripper argument is set to true.
+        Node(
+            package='franka_hand_crisp_py_adapter',
+            executable='franka_hand_crisp_py_adapter',
+            name='franka_hand_crisp_py_adapter',
+            namespace=namespace,
+            output='screen',
+            condition=IfCondition(LaunchConfiguration('load_gripper')),
+        )
     ]
 
     return nodes
