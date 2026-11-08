@@ -46,21 +46,20 @@ gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.
 
 ## Teleoperation with CRISP
 
-> [!NOTE]
-> This currently works only with PS5 teleoperation but will be implemented for other teleoperation devices too (HTC Vive, keyboard etc.). This is currently just a small script/PoC implementation which verifies that Gazebo Franka can be controlled with CRISP.
 
-### 2. Copy config
+### 2. Copy CRISP env config
 
-Copy the config `franka_fm.yaml` or `franka_fm_no_cameras.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory
+Copy the config `franka_fm.yaml` or `franka_fm_no_cameras.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory. These are used as config for CRISP environment which handles the robot and gripper control and camera images.
 
-### 3. Run Gazebo / Real Franka ROS2 nodes
+### 3. Run Gazebo or Real Franka ROS2 nodes
 
-In Docker terminal run the Gazebo simulation environment with:
+If you are testing and want to try this with simulated Franka. Run the Gazebo simulation environment in Docker terminal with:
 ```bash
 ros2 launch franka_fm_gazebo sim.launch.py
 ```
 
-Or when using real HW use the custom `franka_fm_bringup_package`:
+If you are using real HW/Franka, launch the custom `franka_fm_bringup` package.
+Ensure the robot is connected and ready before launching.
 
 ### Launch with gripper
 
@@ -70,7 +69,6 @@ ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_typ
 
 This starts the robot controllers, official Franka Hand action servers, and the CRISP gripper adapter.
 
-Ensure the robot is connected and ready before launching.
 
 ### 4. Run PS5/Gamepad teleop node
 
@@ -95,21 +93,18 @@ Teleop is ready
 
 ## 6. Record LeRobot data
 
-### 1. In Docker terminal run the Gazebo simulation environment with:
-```bash
-ros2 launch franka_fm_gazebo sim.launch.py
-```
+### 1. In Docker terminal, run Gazebo or Real HW bringup as instructed above to start required Franka ROS2 nodes
 ### 2. Launch PS5/Gamepad teleop node in Pixi terminal
 ```bash
 ros2 launch crisp_teleop teleop.launch.py
 ```
 
-### 3. In Pixi terminal navigate to `crisp/src/record` directory and run `record_teleop.py`
+### 3. In another Pixi terminal navigate to `crisp/src/record` directory and run `record_teleop.py`
 
 Script accepts multiple arguments but here is one example for testing
 
 ```bash
-python record_teleop.py --tasks 'Pick the green cube and place it on the blue surface' --fps 25 --num-episodes 1 
+python3 record_teleop.py --tasks 'Pick the green cube and place it on the blue surface' --fps 30 --num-episodes 2 
 ```
 By running that, the script should initialize the recording and waits until user presses `r` to start the teleop and recording. By pressing `r` again, it asks whether
 the user wants to save/delete the recorded episode by pressing `s`/`d`. Press `s` and the episode should be saved. 

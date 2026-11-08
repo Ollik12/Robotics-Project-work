@@ -14,7 +14,7 @@ setup_logging()
 rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
 teleop = TeleopStreamedPose()
 
-env_config = make_env_config("franka_fm", control_frequency=30.0)
+env_config = make_env_config("franka_fm_no_cameras", control_frequency=30.0)
 env = ManipulatorCartesianEnv(config=env_config)
 
 # Initialize CRISP's target

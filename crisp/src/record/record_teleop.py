@@ -9,7 +9,6 @@ from pathlib import Path
 import numpy as np
 
 import rclpy
-from rclpy.executors import SingleThreadedExecutor
 
 import crisp_gym  # noqa: F401
 from crisp_gym.config.home import HomeConfig
@@ -28,7 +27,6 @@ from crisp_gym.util.setup_logger import setup_logging
 SRC_DIR = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(SRC_DIR))
 
-from reset_service.crisp_reset_service import CrispResetService  # noqa: E402
 
 def main():
     """Record data in Lerobot Format using a leader-follower teleoperation setup."""
@@ -106,21 +104,12 @@ def main():
     for arg, value in vars(args).items():
         logger.info(f"{arg:<30}: {value}")
 
-    env_config = env_config = make_env_config("franka_fm")
+    env_config = env_config = make_env_config("franka_fm_no_cameras", control_frequency=30.0)
 
     try:
 
         rclpy.init()
         env = ManipulatorCartesianEnv(config=env_config)
-
-        # Initialize the CRISP reset service to sync CRISP after separate reset
-        reset_service = CrispResetService(env=env)
-
-        executor = SingleThreadedExecutor()
-        executor.add_node(reset_service)
-
-        service_thread = threading.Thread(target=executor.spin, daemon=True)
-        service_thread.start()
 
         leader = TeleopStreamedPose()
         logger.info("Using streamed teleop for teleop.")
@@ -211,9 +200,6 @@ def main():
 
     finally:
         if rclpy.ok():
-            executor.shutdown()
-            service_thread.join(timeout=2.0)
-            reset_service.destroy_node()
             rclpy.shutdown()
 
 

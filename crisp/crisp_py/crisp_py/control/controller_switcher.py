@@ -37,7 +37,8 @@ class ControllerSwitcherClient:
             "controller_manager/configure_controller",
             callback_group=ReentrantCallbackGroup(),
         )
-        # Own fork of the controller_manager_bridge package is used to list controllers through a compatibility bridge
+        # Own custom controller_manager_bridge package is used to list controllers through a compatibility bridge
+        # The bridge is needed because the Docker side list_controllers service is not compatible with CRISP controller-msgs 4.25
         self.list_client = node.create_client(
             Trigger,
             "/crisp_compat/list_controllers",
