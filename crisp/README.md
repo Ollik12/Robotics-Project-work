@@ -51,27 +51,39 @@ gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.
 
 ### 2. Copy config
 
-Copy the config `franka_fm.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory
+Copy the config `franka_fm.yaml` or `franka_fm_no_cameras.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory
 
-### 3. Run Gazebo
+### 3. Run Gazebo / Real Franka ROS2 nodes
 
 In Docker terminal run the Gazebo simulation environment with:
 ```bash
 ros2 launch franka_fm_gazebo sim.launch.py
 ```
 
-### 4. Run PS5 teleop node
+Or when using real HW use the custom `franka_fm_bringup_package`:
 
-In another Docker terminal launch PS5 teleop node with `--crisp-teleop` argument
+### Launch with gripper
+
 ```bash
-ros2 run franka_fm_teleop ps5_teleop_node --crisp-teleop
+ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3 load_gripper:=true
+```
+
+This starts the robot controllers, official Franka Hand action servers, and the CRISP gripper adapter.
+
+Ensure the robot is connected and ready before launching.
+
+### 4. Run PS5/Gamepad teleop node
+
+In Pixi terminal launch new teleop node
+```bash
+ros2 launch crisp_teleop teleop.launch.py
 ```
 
 ### 5. Run CRISP teleop script
 
 Finally, run in Pixi/CRISP terminal script which is located in `crisp/src/teleop/crisp_teleop.py`. Navigate to that directory in your terminal and run:
 ```bash
-python crisp_teleop.py
+python3 crisp_teleop.py
 ```
 
 It should print these is everything is OK and then the teleoperation should work:
@@ -87,12 +99,12 @@ Teleop is ready
 ```bash
 ros2 launch franka_fm_gazebo sim.launch.py
 ```
-### 2. In another Docker terminal launch PS5 teleop node with `--crisp-teleop` argument
+### 2. Launch PS5/Gamepad teleop node in Pixi terminal
 ```bash
-ros2 run franka_fm_teleop ps5_teleop_node --crisp-teleop
+ros2 launch crisp_teleop teleop.launch.py
 ```
 
-### 3. In Pixi/CRISP terminal navigate to `crisp/src/record` directory and run `record_teleop.py`
+### 3. In Pixi terminal navigate to `crisp/src/record` directory and run `record_teleop.py`
 
 Script accepts multiple arguments but here is one example for testing
 
@@ -107,21 +119,6 @@ Script saves the episode(s) automatically into `/home/<username>/.cache/huggingf
 If you want to record episodes and push them into hugging face you must give arguments `--repo-id <username>/<repo-id>` and `--push-to-hub true`. However, that is not mandatory
 since the episodes can be saved locally and pushed into hugging face hub afterwards.
 
-### 4. Robot homing / reset
-
-> [!IMPORTANT]
-> Currently implemented only for simulated environment so this node tries to reset cube and surface in Gazebo.
-> When using with real Franka those must be removed or reset will fail.
-
-Robot homing / reset can be done with `franka_fm_reset` node:
-It should be run before starting to record a new episode.
-
-It homes robot, resets teleop node and syncronizes CRISP.
-
-Run in separate (docker) terminal:
-```bash
-ros2 run franka_fm_reset reset_node
-```
 
 ## 7. Hugging Face hub CLI configuration
 
@@ -269,14 +266,6 @@ pixi run -e jazzy-lerobot lerobot-train \
   --log_freq=100 \
   --policy.push_to_hub=false
 ```
-
-
-## 📝 TODO:
-- Implement CRISP teleoperation nodes for other devices such as HTC Vive, 3D Mouse, keyboard etc. / whatever device we will use for teleoperating the real Franka in the future
-- Check gripper observation state (why it stays at value 1 in all datasets)
-    
-## Issues:
-- CRISP ROS2 is using older controller_manager 4.25 while the Docker ROS2 has 4.48. Therefore we cannot use e.g. robot.home() because it requires controller switching.
 
 # Architecture idea:
 ![Environment architecture](/crisp/images/franka_fm_crisp.png)
