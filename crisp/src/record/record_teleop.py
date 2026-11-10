@@ -4,7 +4,6 @@ import argparse
 import json
 import logging
 import sys
-import threading
 from pathlib import Path
 import numpy as np
 
@@ -104,6 +103,10 @@ def main():
     for arg, value in vars(args).items():
         logger.info(f"{arg:<30}: {value}")
 
+    # Setup environment configuration.
+    # franka_fm_sim is config for sim with camera
+    # franka_fm_no_cameras is config for real hw without cameras
+    # franka_fm_real is config for real hw with cameras (not tested)
     env_config = env_config = make_env_config("franka_fm_no_cameras", control_frequency=30.0)
 
     try:

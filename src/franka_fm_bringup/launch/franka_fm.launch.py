@@ -77,6 +77,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
     Shutdown,
+    GroupAction,
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -259,18 +260,20 @@ def generate_robot_nodes(context):
             condition=IfCondition(LaunchConfiguration('load_gripper')),
         ),
         # The franka_fm_cameras launch file is included only if the load_cameras argument is set to true.
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                [
-                    PathJoinSubstitution(
-                        [
+        GroupAction(
+            scoped=True,
+            forwarding=False,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        PathJoinSubstitution([
                             FindPackageShare('franka_fm_cameras'),
                             'launch',
                             'cameras.launch.py',
-                        ]
-                    )
-                ]
-            ),
+                        ])
+                    ),
+                ),
+            ],
             condition=IfCondition(LaunchConfiguration('load_cameras')),
         ),
         # The franka_hand_crisp_py_adapter node is launched only if the load_gripper argument is set to true.

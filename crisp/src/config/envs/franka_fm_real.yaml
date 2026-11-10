@@ -1,0 +1,32 @@
+control_frequency: 30.0
+gripper_mode: "absolute_continuous"
+
+cartesian_control_param_config: null
+joint_control_param_config: null
+
+robot_config:
+  robot_type: "franka"
+
+gripper_config:
+  min_value: 0
+  max_value: 1
+  command_topic: "/gripper/gripper_position_controller/commands"
+  joint_state_topic: "/gripper/joint_states"
+
+# Camera config for real robot using realsense cameras which nodes are started automatically with franka_fm_bringup. 
+# The topics are different from the simulation.
+# The camera frame name is just needed for metadata, it is not required to be present in robot URDF.
+camera_configs:
+  - camera_name: "wrist_camera"
+    camera_frame: "wrist_camera_link"
+    resolution: [256, 256]
+    camera_color_image_topic: "/camera/wrist_camera/color/image_raw"
+    camera_color_info_topic: "/camera/wrist_camera/color/camera_info"
+
+  - camera_name: "side_camera"
+    camera_frame: "side_camera_link"
+    resolution: [256, 256]
+    camera_color_image_topic: "/camera/side_camera/color/image_raw"
+    camera_color_info_topic: "/camera/side_camera/color/camera_info"
+
+sensor_configs: []

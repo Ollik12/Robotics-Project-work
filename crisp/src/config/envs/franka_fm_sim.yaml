@@ -11,6 +11,8 @@ gripper_config:
   min_value: 0
   max_value: 1
 
+# Camera config for simulation using Gazebo cameras.
+# The topics are different from the real robot.
 camera_configs:
   - camera_name: "wrist_camera"
     camera_frame: "wrist_camera_link"

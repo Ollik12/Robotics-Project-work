@@ -14,7 +14,7 @@ setup_logging()
 rclpy.init(signal_handler_options=SignalHandlerOptions.NO)
 teleop = TeleopStreamedPose()
 
-env_config = make_env_config("franka_fm_no_cameras", control_frequency=30.0)
+env_config = make_env_config("franka_fm_sim", control_frequency=30.0)
 env = ManipulatorCartesianEnv(config=env_config)
 
 # Initialize CRISP's target
@@ -33,7 +33,7 @@ if teleop.is_ready():
 
     try:
         while True:
-            env.robot.controller_switcher_client.switch_controller(controller_name="cartesian_impedance_controller", controllers_that_should_be_active=["gripper_position_controller"])
+            env.robot.controller_switcher_client.switch_controller(controller_name="cartesian_impedance_controller")
             current_pose = teleop.last_pose
             action_pose = current_pose - previous_pose
             previous_pose = current_pose
