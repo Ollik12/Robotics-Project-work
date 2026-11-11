@@ -123,28 +123,28 @@ since the episodes can be saved locally and pushed into hugging face hub afterwa
 curl -LsSf https://hf.co/cli/install.sh | bash
 ```
 
-### 2. Create Access Token
+### 2. Login / Create Access Token
 
 Login to [Hugging Face](https://huggingface.co)
 
-Go to Settings > Access Token and create new access token and copy the value
-
-From terminal use
+Login from terminal:
 ```bash
 hf auth login
 ```
-And paste the token value when prompted
+That will prompt whether you want to login traditionally with browser or use access token.
+
+If you want to use access token: Go to Settings > Access Token and create new access token and copy the value and paste the token value when prompted in terminal.
 
 ## 8. Push datasets manually into HF hub
 
 ### 1. Create dataset repo to HF hub
 
 ### 2. Copy dataset (optional)
-Once you have successfully recorded dataset and setup the hf CLI authentication, you can copy the data set from
-`/home/<username>/.cache/huggingface/lerobot` to e.g. `/home/<username>`, open terminal in that directory
+Once you have successfully recorded dataset and setup the hf CLI authentication, you can copy the data set from `/home/<username>/.cache/huggingface/lerobot` to e.g. `/home/<username>`
 
 ### 3. Push data to HF repo
 
+From the dataset directory:
 ```bash
 hf upload <username>/<repo-id> . --repo-type=dataset
 ```
