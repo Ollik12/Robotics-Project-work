@@ -13,10 +13,11 @@ The `franka_fm.launch.py` launch file starts:
 - **Pose Broadcaster:** Publishes the robot's current end-effector pose.
 - **Franka Gripper (optional):** Launches the official `franka_gripper` action servers for controlling the Franka Hand.
 - **Franka Hand CRISP Adapter (optional):** Launches `franka_hand_crisp_py_adapter`, which translates CRISP gripper commands into actions supported by the official Franka gripper driver.
-- **Camera Nodes (optional)** Launches franka_fm_cameras, which starts two RealSense Camera nodes automatically. See `franka_fm_cameras` `README.md` for further instructions how to configure cameras etc.
+- **Camera Nodes (optional)** Launches `franka_fm_cameras`, which starts two RealSense Camera nodes automatically. See [Franka FM Cameras](../franka_fm_cameras/README.md) for further instructions how to configure cameras etc.
 
 Both optional gripper components are launched when `load_gripper:=true` is specified.
-Camera nodes are started when `load_cameras:=true` is specified.
+
+Camera nodes are launched when `load_cameras:=true` is specified.
 
 ### Gripper Control
 
@@ -33,7 +34,6 @@ The adapter uses the following interfaces:
 | `/franka_gripper/grasp` | Franka Hand grasp action server |
 | `/franka_gripper/homing` | Franka Hand homing action server |
 
-The `gripper_position_controller` does not need to be activated, as the adapter handles incoming commands directly.
 
 ## Usage
 
@@ -66,7 +66,7 @@ The FR3 robot can be teleoperated using a PS5 DualSense controller through the `
 
 > [!NOTE]
 > Teleop node can be configured to publish commands to `/phone_pose ` & `/phone_gripper` topics which is required
-> when we are using CRISP environment for e.g. recording dataset episodes.
+> when we are using CRISP environment for recording dataset episodes.
 
 Ensure that `teleop.yaml` in `crisp/ros2_ws/src/crisp_teleop/config` is configured as:
 ```yaml
