@@ -1,11 +1,15 @@
 # Franka FR3 Environment for ROBO.666 FM Project
 
 Docker-based ROS 2 development environment for the ROBO.666 FM project.
-The environment provides a reproducible workspace for developing and testing the Franka Research 3 (FR3) simulation and teleoperation software.
+The environment provides a reproducible workspace for developing and testing the Franka Research 3 (FR3) with foundation models.
 
-This environment uses the official `franka_ros2` package and its dependencies, along with `crisp_controllers` for future CRISP-based VLA data collection.
+This environment uses the official `franka_ros2` package and its dependencies, along with `crisp_controllers` for CRISP-based VLA data collection and policy deployment.
 
 This environment creates Docker workspace where the repository `src/` is mounted into Docker `ros2_ws/src`
+
+> [!IMPORTANT]
+> Environment has been found to work best with native Ubuntu. WSL can cause some unexpected issues. 
+> Tested with Ubuntu 24.04.5 LTS
 
 ## Prequisites
 - Git
@@ -60,7 +64,7 @@ source install/setup.bash
 
 > [!IMPORTANT]
 > When opening repository in VS Code and starting Dev Containers, make
-> sure that you open it with `Reopen in container` NOT with `Rebuild and reopen in container`.
+> sure that you open it with `Reopen in container` **NOT** with `Rebuild and reopen in container`.
 > If you rebuild the container you must install all the ROS2 dependencies again and build
 > ROS2 packages from the scratch
 
@@ -76,3 +80,13 @@ Launch with:
 ```
 ros2 launch franka_fm_gazebo sim.launch.py
 ```
+
+## Launch real Franka/Environment ROS2 nodes with CRISP controllers
+
+See the [Franka FM bringup instructions](./src/franka_fm_bringup/README.md). It includes instructions for launching the required nodes and also instructions for teleoperation. 
+
+Teleoperation and dataset recording requires `crisp` setup. See the [CRISP instructions](./crisp/README.md)
+
+## RealSense camera configuration
+
+See the [Franka FM Cameras](./src/franka_fm_cameras/README.md)

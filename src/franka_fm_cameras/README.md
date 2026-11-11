@@ -32,6 +32,12 @@ rs-enumerate-devices
 ```
 
 Update the `serial_no` values to ensure each camera is assigned to the correct node.
+ROS 2 RealSense wrapper requires an underscore (_) prefix before numeric serial numbers. For example serial 1234 config:
+```yaml
+wrist_camera:
+  serial_no: "_1234"
+  color_profile: "640x480x30"
+```
 
 ## Usage
 
@@ -61,8 +67,8 @@ By default, `load_cameras` is `false`.
 The cameras publish RGB images to:
 
 ```text
-/wrist_camera/camera/color/image_raw
-/side_camera/camera/color/image_raw
+/camera/wrist_camera/color/image_raw
+/camera/side_camera/color/image_raw
 ```
 
 These topics can be used by the CRISP recording environment to collect camera observations.
@@ -71,8 +77,8 @@ To verify image publishing:
 
 ```bash
 ros2 topic list
-ros2 topic hz /wrist_camera/camera/color/image_raw
-ros2 topic hz /side_camera/camera/color/image_raw
+ros2 topic hz /camera/wrist_camera/color/image_raw
+ros2 topic hz /camera/side_camera/color/image_raw
 ```
 
 ## Dependencies

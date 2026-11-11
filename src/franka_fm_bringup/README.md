@@ -13,8 +13,10 @@ The `franka_fm.launch.py` launch file starts:
 - **Pose Broadcaster:** Publishes the robot's current end-effector pose.
 - **Franka Gripper (optional):** Launches the official `franka_gripper` action servers for controlling the Franka Hand.
 - **Franka Hand CRISP Adapter (optional):** Launches `franka_hand_crisp_py_adapter`, which translates CRISP gripper commands into actions supported by the official Franka gripper driver.
+- **Camera Nodes (optional)** Launches franka_fm_cameras, which starts two RealSense Camera nodes automatically. See `franka_fm_cameras` `README.md` for further instructions how to configure cameras etc.
 
 Both optional gripper components are launched when `load_gripper:=true` is specified.
+Camera nodes are started when `load_cameras:=true` is specified.
 
 ### Gripper Control
 
@@ -28,12 +30,15 @@ The adapter uses the following interfaces:
 |---|---|
 | `/gripper/gripper_position_controller/commands` | Receives gripper commands from CRISP |
 | `/gripper/joint_states` | Receives/updates gripper joint states |
-| `/gripper/grasp` | Franka Hand grasp action server |
-| `/gripper/homing` | Franka Hand homing action server |
+| `/franka_gripper/grasp` | Franka Hand grasp action server |
+| `/franka_gripper/homing` | Franka Hand homing action server |
 
 The `gripper_position_controller` does not need to be activated, as the adapter handles incoming commands directly.
 
 ## Usage
+
+- Ensure the robot is connected and ready before launching.
+- Verify the correct robot IP and use that.
 
 ### Launch without gripper
 
@@ -49,13 +54,29 @@ ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_typ
 
 This starts the robot controllers, official Franka Hand action servers, and the CRISP gripper adapter.
 
-Ensure the robot is connected and ready before launching.
+### Full environment (Franka, gripper & cameras)
+
+```bash
+ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3 load_gripper:=true load_cameras:=true
+```
 
 ## Teleoperation
 
 The FR3 robot can be teleoperated using a PS5 DualSense controller through the `crisp_teleop` ROS 2 package.
 
-The teleop node uses `crisp_py.Robot` to send Cartesian target poses to the CRISP Cartesian Impedance Controller.
+> [!NOTE]
+> Teleop node can be configured to publish commands to `/phone_pose ` & `/phone_gripper` topics which is required
+> when we are using CRISP environment for e.g. recording dataset episodes.
+
+Ensure that `teleop.yaml` in `crisp/ros2_ws/src/crisp_teleop/config` is configured as:
+```yaml
+mode: "stream"  # "stream" or "robot"
+```
+
+If you want to just test the teleoperation without CRISP environment, you can configure the `teleop.yaml` mode to `robot` (no gripper control implemented)
+
+- The direct robot mode uses `crisp_py.Robot` to send Cartesian target poses to the CRISP Cartesian Impedance Controller.
+- Stream mode publishes commands which are conveyed to CRISP environment trough CRISP `TelepStreamedPose` (this is the preferred way since this environment is primarly used for recording datasets with CRISP).
 
 ### Setup
 
@@ -95,7 +116,14 @@ ros2 launch crisp_teleop teleop.launch.py
 
 The launch file starts:
 - **Joy Node:** Reads input from the PS5 controller and publishes `/joy` messages.
-- **CRISP Teleop Node:** Processes joystick inputs and sends Cartesian target poses to the robot using `crisp_py.Robot`.
+- **CRISP Teleop Node:** Processes joystick inputs and sends Cartesian target poses to the robot.
+
+If you are using `streamed` mode, you need to run another script which handles the CRISP `TeleopStreamedPose` & CRISP environment:
+
+In `crisp/src/teleop`:
+```bash
+python3 crisp_teleop.py
+```
 
 ### Controls
 
@@ -109,25 +137,3 @@ The launch file starts:
 | O | Open gripper (optional) |
 
 **Safety:** Teleoperation requires holding L1. Release L1 to disable new motion commands. This software deadman is not a safety-rated stop; ensure the robot's emergency stop and safety procedures are available.
-
-# TODO – FR3 Teleoperation & Recording
-
-## 1. Franka Gripper
-
-- [ ] Test `franka_fm_bringup` with `load_gripper:=true`.
-- [ ] Verify that the Franka gripper action servers are available.
-- [ ] Test opening and closing the gripper using ROS 2 CLI and examples from the Franka FCI documentation.
-- [ ] Investigate how `crisp_py.Gripper` can be integrated with Franka's gripper actions.
-
-## 2. Streamed Teleoperation
-
-- [ ] Add a configurable `streamed` mode to `crisp_teleop`.
-- [ ] Publish target poses to `/phone_pose`.
-- [ ] Publish binary gripper commands (0/1) to `/phone_gripper`.
-- [ ] Verify that `TeleopStreamedPose` receives both streams correctly.
-
-## 3. Cameras
-
-- [ ] Identify available cameras in the lab and their interfaces.
-- [ ] Investigate the required ROS 2 drivers/nodes for publishing camera images.
-- [ ] Verify that camera topics can be accessed from the Pixi environment.

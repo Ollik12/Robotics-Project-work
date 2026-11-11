@@ -36,11 +36,11 @@ python -c "import crisp_py"
 `patches/` directory contains `record_functions.py` which is modified version from the one that comes with `crisp_gym`. There was a small bug and it has been fixed on that file. Replace `crisp_gym/crisp_gym/record/record_functions.py` with `patches/record_functions.py` file.
 
 Issue was that the original file tried to access `gripper.value` but the `TeleopStreamedPose` class has property `last_gripper`. So I changed `line 78`:
-```
+```python
 gripper = leader.gripper.value if leader.gripper is not None else 0.0
 ```
 to
-```
+```python
 gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.0
 ```
 
@@ -49,7 +49,7 @@ gripper = leader.gripper.last_gripper if leader.last_gripper is not None else 0.
 
 ### 2. Copy CRISP env config
 
-Copy the config `franka_fm.yaml` or `franka_fm_no_cameras.yaml` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory. These are used as config for CRISP environment which handles the robot and gripper control and camera images.
+Copy configs `franka_fm.yaml`, `franka_fm_no_cameras.yaml` & `franka_fm_real` included in `crisp/src/config/envs` to the `crisp_gym/crisp_gym/config/envs` directory. These are used as config for CRISP environment which handles the robot and gripper control and camera images.
 
 ### 3. Run Gazebo or Real Franka ROS2 nodes
 
@@ -94,6 +94,7 @@ Teleop is ready
 ## 6. Record LeRobot data
 
 ### 1. In Docker terminal, run Gazebo or Real HW bringup as instructed above to start required Franka ROS2 nodes
+
 ### 2. Launch PS5/Gamepad teleop node in Pixi terminal
 ```bash
 ros2 launch crisp_teleop teleop.launch.py
@@ -109,11 +110,10 @@ python3 record_teleop.py --tasks 'Pick the green cube and place it on the blue s
 By running that, the script should initialize the recording and waits until user presses `r` to start the teleop and recording. By pressing `r` again, it asks whether
 the user wants to save/delete the recorded episode by pressing `s`/`d`. Press `s` and the episode should be saved. 
 
-Script saves the episode(s) automatically into `/home/<username>/.cache/huggingface/lerobot` directory. 
+Script saves the episode(s) automatically into `/home/<username>/.cache/huggingface/lerobot/test` directory. 
 
 If you want to record episodes and push them into hugging face you must give arguments `--repo-id <username>/<repo-id>` and `--push-to-hub true`. However, that is not mandatory
 since the episodes can be saved locally and pushed into hugging face hub afterwards.
-
 
 ## 7. Hugging Face hub CLI configuration
 
