@@ -3,6 +3,18 @@
 > [!NOTE]
 > `crisp_gym` will run inside Pixi environment with dedicated Robostack ROS2 version. Therefore, setup/run crisp outside the Franka Docker environment. CRISP and the Franka Docker ROS will communicate with each other via same `ROS_DOMAIN_ID` and using `rmw_cyclonedds_cpp`.
 
+## Configure Pixi side `cyclonedds.xml`:
+
+Check what network interface is used:
+```bash
+ip -br addr
+```
+
+In `crisp/cyclonedds.xml` if e.g. interface name is `eno1`, configure:
+```xml
+<NetworkInterface name="eno1"/>
+```
+
 ## 1. Install Pixi
 
 Linux

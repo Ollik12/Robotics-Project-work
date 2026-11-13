@@ -29,6 +29,8 @@ services:
       ROS_DOMAIN_ID: 100
       # RMW_IMPLEMENTATION is used to select the ROS2 middleware implementation. CycloneDDS is used here for better performance and reliability.
       RMW_IMPLEMENTATION: rmw_cyclonedds_cpp
+      ROS_LOCALHOST_ONLY: 0
+      CYCLONEDDS_URI: "file:///ros2_ws/src/cyclonedds.xml"
     cap_add:
       - SYS_NICE
     ulimits:

@@ -19,6 +19,18 @@ This environment creates Docker workspace where the repository `src/` is mounted
 
 ## Setup
 
+## Configure Docker side `cyclonedds.xml`:
+
+Check what network interface is used:
+```bash
+ip -br addr
+```
+
+In `src/cyclonedds.xml` if e.g. interface name is `eno1`, configure:
+```xml
+<NetworkInterface name="eno1"/>
+```
+
 ### 1. Install Dev Contrainers extension to VS Code
 
 ### 2. Clone repository and open in VS Code

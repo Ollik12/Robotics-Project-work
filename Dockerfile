@@ -27,6 +27,7 @@ RUN apt-get update && \
         vim \
         libgtest-dev \
         libgmock-dev \
+        usbutils \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
