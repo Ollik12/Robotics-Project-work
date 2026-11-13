@@ -11,8 +11,8 @@ gripper_config:
   min_value: 0
   max_value: 1
   max_delta: 1.0
-  command_topic: "gripper/gripper_position_controller/commands"
-  joint_state_topic: "gripper/joint_states"
+  command_topic: "/gripper/gripper_position_controller/commands"
+  joint_state_topic: "/gripper/joint_states"
 
 sensor_configs: []
 camera_configs: []
