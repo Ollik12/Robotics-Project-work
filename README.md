@@ -35,9 +35,7 @@ Set that interface name in `src/cyclonedds.xml`. For example, for `eno1`:
 <NetworkInterface name="eno1"/>
 ```
 
-Docker uses host networking, so the host interface name also applies inside the container. Configure each PC's checkout for its own interface; names may differ between PCs. No separate `crisp/cyclonedds.xml` configuration is needed.
-
-If you change the configuration after starting ROS, stop the running nodes and run `ros2 daemon stop` in each affected environment. Reopen the Docker/Pixi shells and relaunch the nodes. Existing ROS processes do not reload this XML automatically.
+Docker uses host networking, so the host interface name also applies inside the container. Configure each PC's checkout for its own interface; names may differ between PCs.
 
 ### 1. Install Dev Contrainers extension to VS Code
 

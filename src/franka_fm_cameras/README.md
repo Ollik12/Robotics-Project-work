@@ -39,6 +39,17 @@ wrist_camera:
   color_profile: "640x480x30"
 ```
 
+## ROS2 dependencies
+
+The`compressed_image_transport` plugin is required to publish compressed images for CRISP.
+
+Install dependencies if not already installed:
+```bash
+sudo apt update
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+```
+
 ## Usage
 
 ### Standalone

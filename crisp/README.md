@@ -21,8 +21,6 @@ In the repository's `src/cyclonedds.xml` (`../src/cyclonedds.xml` from `crisp/`)
 
 Configure each PC's checkout for its own interface. Docker uses host networking, so Docker and Pixi on the same PC use the same interface name.
 
-If you change the configuration after starting ROS, stop the running nodes and run `ros2 daemon stop` in each affected environment. Reopen the Docker/Pixi shells and relaunch the nodes; existing ROS processes do not reload the XML automatically.
-
 ## 1. Install Pixi
 
 Linux
