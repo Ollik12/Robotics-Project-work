@@ -199,6 +199,7 @@ class CrispPyGripperAdapater(Node):
         ):
             self.gripper_client.close()
             self.is_closing = True
+            self.get_logger().info("Closing the gripper.")
         elif (
             gripper_command > 0.5
             and not self.gripper_client.is_open()
@@ -206,6 +207,7 @@ class CrispPyGripperAdapater(Node):
         ):
             self.gripper_client.open()
             self.is_closing = False
+            self.get_logger().info("Opening the gripper.")
 
 
 def main():
