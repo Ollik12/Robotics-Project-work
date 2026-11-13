@@ -28,7 +28,7 @@ side_camera:
 Before using physical cameras, identify their serial numbers:
 
 ```bash
-rs-enumerate-devices
+rs-enumerate-devices -s
 ```
 
 Update the `serial_no` values to ensure each camera is assigned to the correct node.

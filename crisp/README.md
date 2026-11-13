@@ -5,6 +5,8 @@
 
 ## Configure Pixi side `cyclonedds.xml`:
 
+We must configure CycloneDDS so that two PCs in the same network can see each other's topics.
+
 Check what network interface is used:
 ```bash
 ip -br addr
@@ -36,6 +38,7 @@ Access the CRISP Pixi shell from `crisp/` directory with:
 ```bash
 pixi shell -e jazzy-lerobot
 ```
+This will install all the required packages into pixi environment. **Note!: Packages require approx. 13 GB!**
 
 Test that the installation was successful. These should not print anything:
 ```bash
@@ -71,7 +74,9 @@ ros2 launch franka_fm_gazebo sim.launch.py
 ```
 
 If you are using real HW/Franka, launch the custom `franka_fm_bringup` package.
-Ensure the robot is connected and ready before launching.
+
+- Ensure the robot is connected and ready before launching.
+- Verify the correct robot IP and use that.
 
 ### Launch with gripper
 
@@ -91,7 +96,7 @@ ros2 launch crisp_teleop teleop.launch.py
 
 ### 5. Run CRISP teleop script
 
-Finally, run in Pixi/CRISP terminal script which is located in `crisp/src/teleop/crisp_teleop.py`. Navigate to that directory in your terminal and run:
+Finally, run script in Pixi/CRISP terminal which is located in `crisp/src/teleop/crisp_teleop.py`. Navigate to that directory in your terminal and run:
 ```bash
 python3 crisp_teleop.py
 ```

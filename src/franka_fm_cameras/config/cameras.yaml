@@ -1,7 +1,7 @@
 wrist_camera:
-  serial_no: ""
+  serial_no: "_051122073420"
   color_profile: "640x480x30"
 
 side_camera:
-  serial_no: ""
+  serial_no: "_845112071321"
   color_profile: "640x480x30"

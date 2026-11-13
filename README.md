@@ -19,7 +19,9 @@ This environment creates Docker workspace where the repository `src/` is mounted
 
 ## Setup
 
-## Configure Docker side `cyclonedds.xml`:
+### Configure Docker side `cyclonedds.xml`:
+
+We must configure CycloneDDS so that two PCs in the same network can see each other's topics.
 
 Check what network interface is used:
 ```bash
