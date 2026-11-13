@@ -3,19 +3,25 @@
 > [!NOTE]
 > `crisp_gym` will run inside Pixi environment with dedicated Robostack ROS2 version. Therefore, setup/run crisp outside the Franka Docker environment. CRISP and the Franka Docker ROS will communicate with each other via same `ROS_DOMAIN_ID` and using `rmw_cyclonedds_cpp`.
 
-## Configure Pixi side `cyclonedds.xml`:
+## Configure the shared Cyclone DDS network interface before entering Pixi
 
-We must configure CycloneDDS so that two PCs in the same network can see each other's topics.
+CRISP/Pixi and Docker use the same file: [`../src/cyclonedds.xml`](../src/cyclonedds.xml), relative to this directory. Pixi's activation script sets `CYCLONEDDS_URI` to `file://${PIXI_PROJECT_ROOT}/../src/cyclonedds.xml`. There is no separate Pixi XML file to configure.
 
-Check what network interface is used:
+**Configure this file before entering `pixi shell`, opening Docker development shells, or launching ROS 2 nodes.** In a host terminal, identify the interface connected to the network shared by the ROS PCs:
+
 ```bash
 ip -br addr
 ```
 
-In `crisp/cyclonedds.xml` if e.g. interface name is `eno1`, configure:
+In the repository's `src/cyclonedds.xml` (`../src/cyclonedds.xml` from `crisp/`), set the interface name. For example:
+
 ```xml
 <NetworkInterface name="eno1"/>
 ```
+
+Configure each PC's checkout for its own interface. Docker uses host networking, so Docker and Pixi on the same PC use the same interface name.
+
+If you change the configuration after starting ROS, stop the running nodes and run `ros2 daemon stop` in each affected environment. Reopen the Docker/Pixi shells and relaunch the nodes; existing ROS processes do not reload the XML automatically.
 
 ## 1. Install Pixi
 
@@ -34,7 +40,7 @@ git clone git@github.com:learnsyslab/crisp_gym.git
 
 ## 3. Access Pixi shell and test installation
 
-Access the CRISP Pixi shell from `crisp/` directory with:
+After configuring the shared Cyclone DDS file above, access the CRISP Pixi shell from `crisp/` with:
 ```bash
 pixi shell -e jazzy-lerobot
 ```

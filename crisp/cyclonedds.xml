@@ -1,9 +1,0 @@
-<CycloneDDS xmlns="https://cdds.io/config">
-    <Domain Id="any">
-        <General>
-            <Interfaces>
-                <NetworkInterface name="eno1"/>
-            </Interfaces>
-        </General>
-    </Domain>
-</CycloneDDS>

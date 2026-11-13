@@ -19,19 +19,25 @@ This environment creates Docker workspace where the repository `src/` is mounted
 
 ## Setup
 
-### Configure Docker side `cyclonedds.xml`:
+### Configure the shared Cyclone DDS network interface before starting shells
 
-We must configure CycloneDDS so that two PCs in the same network can see each other's topics.
+Docker and CRISP/Pixi use the same configuration file: [`src/cyclonedds.xml`](src/cyclonedds.xml). Docker accesses it at `/ros2_ws/src/cyclonedds.xml`; Pixi accesses it through `${PIXI_PROJECT_ROOT}/../src/cyclonedds.xml`.
 
-Check what network interface is used:
+After cloning the repository, configure this file **before reopening VS Code in the container, entering a Pixi shell, or launching ROS 2 nodes**. On each PC, use a host terminal to identify the interface connected to the network shared by the ROS PCs:
+
 ```bash
 ip -br addr
 ```
 
-In `src/cyclonedds.xml` if e.g. interface name is `eno1`, configure:
+Set that interface name in `src/cyclonedds.xml`. For example, for `eno1`:
+
 ```xml
 <NetworkInterface name="eno1"/>
 ```
+
+Docker uses host networking, so the host interface name also applies inside the container. Configure each PC's checkout for its own interface; names may differ between PCs. No separate `crisp/cyclonedds.xml` configuration is needed.
+
+If you change the configuration after starting ROS, stop the running nodes and run `ros2 daemon stop` in each affected environment. Reopen the Docker/Pixi shells and relaunch the nodes. Existing ROS processes do not reload this XML automatically.
 
 ### 1. Install Dev Contrainers extension to VS Code
 
@@ -42,6 +48,7 @@ cd Robotics-Project-work
 code .
 ```
 ### 3. Dev Containers setup
+- Complete the shared Cyclone DDS configuration above before opening the container.
 - Choose `Reopen in container` when prompted in VS Code
 - If you miss the prompt, press **Ctrl+Shift+P** to open the Command Palette, then select `Reopen in container`
 
