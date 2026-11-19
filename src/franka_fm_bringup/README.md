@@ -34,38 +34,48 @@ The adapter uses the following interfaces:
 | `/franka_gripper/grasp` | Franka Hand grasp action server |
 | `/franka_gripper/homing` | Franka Hand homing action server |
 
+## Configuration
+
+Complete the [Docker workspace setup](../../README.md#setup) and [shared network configuration](../../README.md#configure-the-shared-cyclone-dds-network-interface-before-starting-shells) first. Run this package in Docker on the PC connected to the robot. Confirm the robot is ready and use its actual Ethernet IP address.
+
+### Launch arguments
+
+Pass overrides as `argument:=value` to `franka_fm.launch.py`.
+
+| Argument | Default | Purpose |
+|---|---|---|
+| `robot_type` | Empty | Set to `fr3` for this robot |
+| `robot_ip` | `172.16.0.2` | Robot IP address; set explicitly for your hardware |
+| `load_gripper` | `false` | Start the Franka Hand driver and CRISP adapter |
+| `load_cameras` | `false` | Start both RealSense nodes on the machine running bringup |
+| `controllers_yaml` | Package `config/controllers.yaml` | Override the ROS 2 controller configuration file |
+| `namespace` | Empty | ROS namespace for the robot |
+| `arm_prefix` | Empty | Prefix for arm topics |
+| `joint_state_rate` | `30` | Joint state publishing rate in Hz |
+| `load_franka_robot_state_broadcaster` | `true` | Enable the Franka robot state broadcaster |
+| `use_fake_hardware` | `false` | Use fake hardware instead of the physical robot |
+| `fake_sensor_commands` | `false` | Enable fake sensor commands |
+
+Keep the default empty namespace and arm prefix for the supplied CRISP recording configuration. If you change them, update the corresponding CRISP topic configuration to match.
+
+### Controllers
+
+The default controller configuration is [`config/controllers.yaml`](config/controllers.yaml). Use `controllers_yaml:=/absolute/path/to/controllers.yaml` to select a different file visible inside Docker. Check this file when configuring controller parameters.
+
+### Cameras
+
+Configure camera serial numbers and image profiles using the [camera package instructions](../franka_fm_cameras/README.md#configuration). Enable `load_cameras:=true` only when the cameras are connected to the bringup PC. For cameras on another PC, leave it disabled and launch the camera package there as described in the root workflow.
 
 ## Usage
 
-- Ensure the robot is connected and ready before launching.
-- Verify the correct robot IP and use that.
-
-### Launch without gripper
-
-```bash
-ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3
-```
-
-### Launch with gripper
-
-```bash
-ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3 load_gripper:=true
-```
-
-This starts the robot controllers, official Franka Hand action servers, and the CRISP gripper adapter.
-
-### Full environment (Franka, gripper & cameras)
-
-```bash
-ros2 launch franka_fm_bringup franka_fm.launch.py robot_ip:=172.16.0.2 robot_type:=fr3 load_gripper:=true load_cameras:=true
-```
+The complete [real-hardware recording workflow](../../README.md#dataset-recording-workflow-with-real-hw) contains the ordered launch commands, terminal assignments, and recording controls. Its robot launch command can be adapted using the arguments above; for example, omit `load_gripper:=true` when operating without the hand.
 
 ## Teleoperation
 
 The FR3 robot can be teleoperated using a PS5 DualSense controller through the `crisp_teleop` ROS 2 package.
 
 > [!NOTE]
-> Teleop node can be configured to publish commands to `/phone_pose ` & `/phone_gripper` topics which is required
+> Teleop node can be configured to publish commands to `/phone_pose` & `/phone_gripper` topics which is required
 > when we are using CRISP environment for recording dataset episodes.
 
 Ensure that `teleop.yaml` in `crisp/ros2_ws/src/crisp_teleop/config` is configured as:
@@ -73,57 +83,26 @@ Ensure that `teleop.yaml` in `crisp/ros2_ws/src/crisp_teleop/config` is configur
 mode: "stream"  # "stream" or "robot"
 ```
 
-If you want to just test the teleoperation without CRISP environment, you can configure the `teleop.yaml` mode to `robot` (no gripper control implemented)
+If you want to just test the teleoperation without CRISP environment, you can configure the `teleop.yaml` mode to `robot` (no gripper control)
 
 - The direct robot mode uses `crisp_py.Robot` to send Cartesian target poses to the CRISP Cartesian Impedance Controller.
-- Stream mode publishes commands which are conveyed to CRISP environment trough CRISP `TelepStreamedPose` (this is the preferred way since this environment is primarly used for recording datasets with CRISP).
+- Stream mode publishes commands which are conveyed to CRISP environment through CRISP `TeleopStreamedPose` (this is the preferred way since this environment is primarily used for recording datasets with CRISP).
 
 ### Setup
 
-1. Connect the PS5 controller to the computer.
-
-2. **Outside Docker**, navigate to the `crisp` directory and activate the Pixi environment:
-
-   ```bash
-   pixi shell -e jazzy-lerobot
-   ```
-
-3. Navigate to the ROS 2 workspace:
-
-   ```bash
-   cd ros2_ws
-   ```
-
-4. Build the packages if not already built:
-
-   ```bash
-   colcon build --symlink-install
-   ```
-
-5. Source the workspace:
-
-   ```bash
-   source install/setup.bash
-   ```
+Connect the gamepad and complete the [Pixi setup and teleoperation workspace build](../../crisp/README.md). Gamepad mappings, speed, deadzone, and timeout settings are defined in [`teleop.yaml`](../../crisp/ros2_ws/src/crisp_teleop/config/teleop.yaml).
 
 ### Launch Teleoperation
 
-Ensure the FR3 robot and CRISP Cartesian Impedance Controller are running before starting teleoperation.
+Follow the [root workflow](../../README.md#dataset-recording-workflow-with-real-hw) to launch the gamepad node and recorder in separate host Pixi shells. The gamepad launch starts the Joy node and CRISP teleop node. In `stream` mode, the recorder consumes the published commands.
 
-```bash
-ros2 launch crisp_teleop teleop.launch.py
-```
+For teleoperation without recording, use `crisp/src/teleop/crisp_teleop.py` as the stream consumer instead of the recorder. With the robot and gamepad node running, activate a separate Pixi shell, navigate to `crisp/src/teleop`, and run:
 
-The launch file starts:
-- **Joy Node:** Reads input from the PS5 controller and publishes `/joy` messages.
-- **CRISP Teleop Node:** Processes joystick inputs and sends Cartesian target poses to the robot.
-
-If you are using `streamed` mode, you need to run another script which handles the CRISP `TeleopStreamedPose` & CRISP environment:
-
-In `crisp/src/teleop`:
 ```bash
 python3 crisp_teleop.py
 ```
+
+Check the environment selected in that script before using it with your hardware.
 
 ### Controls
 

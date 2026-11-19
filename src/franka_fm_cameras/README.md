@@ -60,37 +60,18 @@ Launch both cameras independently:
 ros2 launch franka_fm_cameras cameras.launch.py
 ```
 
-### Franka Bringup
-
-The cameras can also be launched through `franka_fm_bringup` using the `load_cameras` argument:
-
-```bash
-ros2 launch franka_fm_bringup franka_fm.launch.py \
-    robot_ip:=172.16.0.2 \
-    robot_type:=fr3 \
-    load_cameras:=true
-```
-
-By default, `load_cameras` is `false`.
-
 ## ROS 2 Topics
 
 The cameras publish RGB images to:
 
 ```text
 /camera/wrist_camera/color/image_raw
+/camera/wrist_camera/color/image_raw/compressed
 /camera/side_camera/color/image_raw
+/camera/side_camera/color/image_raw/compressed
 ```
 
 These topics can be used by the CRISP recording environment to collect camera observations.
-
-To verify image publishing:
-
-```bash
-ros2 topic list
-ros2 topic hz /camera/wrist_camera/color/image_raw
-ros2 topic hz /camera/side_camera/color/image_raw
-```
 
 ## Dependencies
 

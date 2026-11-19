@@ -20,13 +20,13 @@ gripper_config:
 camera_configs:
   - camera_name: "wrist_camera"
     camera_frame: "wrist_camera_link"
-    resolution: [256, 256]
+    resolution: [480, 640]
     camera_color_image_topic: "/camera/wrist_camera/color/image_raw"
     camera_color_info_topic: "/camera/wrist_camera/color/camera_info"
 
   - camera_name: "side_camera"
     camera_frame: "side_camera_link"
-    resolution: [256, 256]
+    resolution: [480, 640]
     camera_color_image_topic: "/camera/side_camera/color/image_raw"
     camera_color_info_topic: "/camera/side_camera/color/camera_info"
 
