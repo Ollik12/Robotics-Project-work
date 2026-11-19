@@ -44,6 +44,7 @@ From `crisp/`, copy the supplied recording patch and environment configurations:
 
 ```bash
 cp patches/record_functions.py crisp_gym/crisp_gym/record/record_functions.py
+cp patches/lerobot_features.py crisp_gym/crisp_gym/util/lerobot_features.py
 cp src/config/envs/franka_fm_real.yaml crisp_gym/crisp_gym/config/envs/
 cp src/config/envs/franka_fm_sim.yaml crisp_gym/crisp_gym/config/envs/
 cp src/config/envs/franka_fm_no_cameras.yaml crisp_gym/crisp_gym/config/envs/
