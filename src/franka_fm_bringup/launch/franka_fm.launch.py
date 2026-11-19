@@ -77,6 +77,7 @@ from launch.actions import (
     IncludeLaunchDescription,
     OpaqueFunction,
     Shutdown,
+    GroupAction,
 )
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -93,6 +94,8 @@ import xacro
 def generate_robot_nodes(context):
     load_gripper_launch_configuration = LaunchConfiguration('load_gripper').perform(context)
     load_gripper = load_gripper_launch_configuration.lower() == 'true'
+    load_cameras_launch_configuration = LaunchConfiguration('load_cameras').perform(context)
+    load_cameras = load_cameras_launch_configuration.lower() == 'true'
     robot_type = LaunchConfiguration('robot_type').perform(context)
     arm_prefix = LaunchConfiguration('arm_prefix').perform(context)
     urdf_path = PathJoinSubstitution(
@@ -181,6 +184,41 @@ def generate_robot_nodes(context):
             executable="spawner",
             arguments=["pose_broadcaster"],
             output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["joint_trajectory_controller", "--inactive"],
+            output="screen",
+        ),
+        Node(
+            package="controller_manager",
+            executable="spawner",
+            arguments=["twist_broadcaster"],
+            output="screen",
+        ),
+        # Controller list bridge node
+        Node(
+            package="controller_list_bridge",
+            executable="controller_list_bridge",
+            name="controller_list_bridge",
+            output="screen",
+        ),
+        Node(
+            package='rviz2',
+            executable='rviz2',
+            name='rviz2',
+            arguments=[
+                '--display-config',
+                PathJoinSubstitution(
+                    [
+                        FindPackageShare('franka_fm_bringup'),
+                        'rviz',
+                        'visualize_franka.rviz',
+                    ]
+                ),
+            ],
+            output='screen',
         )
     ]
 
@@ -199,6 +237,7 @@ def generate_robot_nodes(context):
                 output='screen',
             ),
         )
+
 
     nodes += [
         IncludeLaunchDescription(
@@ -220,6 +259,32 @@ def generate_robot_nodes(context):
             }.items(),
             condition=IfCondition(LaunchConfiguration('load_gripper')),
         ),
+        # The franka_fm_cameras launch file is included only if the load_cameras argument is set to true.
+        GroupAction(
+            scoped=True,
+            forwarding=False,
+            actions=[
+                IncludeLaunchDescription(
+                    PythonLaunchDescriptionSource(
+                        PathJoinSubstitution([
+                            FindPackageShare('franka_fm_cameras'),
+                            'launch',
+                            'cameras.launch.py',
+                        ])
+                    ),
+                ),
+            ],
+            condition=IfCondition(LaunchConfiguration('load_cameras')),
+        ),
+        # The franka_hand_crisp_py_adapter node is launched only if the load_gripper argument is set to true.
+        Node(
+            package='franka_hand_crisp_py_adapter',
+            executable='franka_hand_crisp_py_adapter',
+            name='franka_hand_crisp_py_adapter',
+            namespace=namespace,
+            output='screen',
+            condition=IfCondition(LaunchConfiguration('load_gripper')),
+        )
     ]
 
     return nodes
@@ -273,6 +338,11 @@ def generate_launch_description():
                 [FindPackageShare('franka_fm_bringup'), 'config', 'controllers.yaml']
             ),
             description='Override the default controllers.yaml file.',
+        ),
+        DeclareLaunchArgument(
+            'load_cameras',
+            default_value='false',
+            description='Launch RealSense wrist and side cameras',
         ),
     ]
 

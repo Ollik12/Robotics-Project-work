@@ -6,10 +6,13 @@ import rclpy
 from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data
 from sensor_msgs.msg import Joy
+from geometry_msgs.msg import PoseStamped
+from std_msgs.msg import Float32
 
 from scipy.spatial.transform import Rotation
 
 from crisp_py.robot.robot import make_robot
+from crisp_py.utils.geometry import Pose
 
 class PS5TeleopNode(Node):
 
@@ -21,6 +24,7 @@ class PS5TeleopNode(Node):
         self.declare_parameter("trans_speed", 0.05)
         self.declare_parameter("rot_speed", 0.1)
         self.declare_parameter("deadzone", 0.1)
+        self.declare_parameter("mode", "robot")
 
         # Safety parameters
         self.declare_parameter("joy_timeout", 0.2)
@@ -33,13 +37,21 @@ class PS5TeleopNode(Node):
         self.declare_parameter("axis_l2", 2)
         self.declare_parameter("axis_r2", 5)
         self.declare_parameter("button_deadman", 4)
+        self.declare_parameter("button_x", 0)
+        self.declare_parameter("button_o", 1)
 
         # Read parameters
         self.update_rate = self.get_parameter("update_rate").value
         self.trans_speed = self.get_parameter("trans_speed").value
         self.rot_speed = self.get_parameter("rot_speed").value
         self.deadzone = self.get_parameter("deadzone").value
+        self.mode = self.get_parameter("mode").value
         self.joy_timeout = self.get_parameter("joy_timeout").value
+
+        if self.mode not in ("robot", "stream"):
+            raise ValueError(
+                f"Unsupported teleop mode '{self.mode}'. Expected 'robot' or 'stream'."
+            )
 
         self.axis_left_x = self.get_parameter("axis_left_x").value
         self.axis_left_y = self.get_parameter("axis_left_y").value
@@ -48,12 +60,17 @@ class PS5TeleopNode(Node):
         self.axis_l2 = self.get_parameter("axis_l2").value
         self.axis_r2 = self.get_parameter("axis_r2").value
         self.button_deadman = self.get_parameter("button_deadman").value
+        self.button_x = self.get_parameter("button_x").value
+        self.button_o = self.get_parameter("button_o").value
 
         self.namespace = self.get_namespace().strip("/")
 
-        # CRISP Robot
-        self.robot = make_robot("fr3", namespace=self.namespace)
-        self.robot.wait_until_ready()
+        self.robot = None
+        self.current_pose = None
+        self.current_pose_frame_id = ""
+        if self.mode == "robot":
+            self.robot = make_robot("fr3", namespace=self.namespace)
+            self.robot.wait_until_ready()
 
         # Joystick state
         self.joy_axes = [0.0] * 6
@@ -64,6 +81,27 @@ class PS5TeleopNode(Node):
         self.active = False
 
         self.target_pose = None
+        self.gripper_value = 0.0
+
+        self.pose_pub = None
+        self.gripper_pub = None
+        if self.mode == "stream":
+            self.current_pose_sub = self.create_subscription(
+                PoseStamped,
+                "/current_pose",
+                self.current_pose_callback,
+                qos_profile_sensor_data,
+            )
+            self.pose_pub = self.create_publisher(
+                PoseStamped,
+                "/phone_pose",
+                qos_profile_sensor_data,
+            )
+            self.gripper_pub = self.create_publisher(
+                Float32,
+                "/phone_gripper",
+                qos_profile_sensor_data,
+            )
 
         # Subscribers
         self.joy_sub = self.create_subscription(
@@ -95,6 +133,10 @@ class PS5TeleopNode(Node):
             any(i < 0 or i >= len(msg.axes) for i in required_axes)
             or self.button_deadman < 0
             or self.button_deadman >= len(msg.buttons)
+            or self.button_x < 0
+            or self.button_x >= len(msg.buttons)
+            or self.button_o < 0
+            or self.button_o >= len(msg.buttons)
         ):
             return
 
@@ -112,8 +154,39 @@ class PS5TeleopNode(Node):
 
         self.enabled = bool(msg.buttons[self.button_deadman])
 
+        if msg.buttons[self.button_x]:
+            self.gripper_value = 0.0
+        elif msg.buttons[self.button_o]:
+            self.gripper_value = 1.0
+
         if not self.enabled:
             self.deadman_released = True
+
+    def current_robot_pose(self):
+        if self.mode == "robot":
+            return self.robot.end_effector_pose
+        if self.current_pose is None:
+            return None
+        return self.current_pose.copy()
+
+    def current_pose_callback(self, msg: PoseStamped):
+        self.current_pose = Pose.from_ros_msg(msg)
+        self.current_pose_frame_id = msg.header.frame_id
+
+    def send_target(self):
+        if self.mode == "robot":
+            self.robot.set_target(pose=self.target_pose)
+            return
+
+        pose_msg = self.target_pose.to_ros_msg(
+            self.current_pose_frame_id,
+            self.get_clock().now().to_msg(),
+        )
+        self.pose_pub.publish(pose_msg)
+
+        gripper_msg = Float32()
+        gripper_msg.data = self.gripper_value
+        self.gripper_pub.publish(gripper_msg)
 
     def apply_deadzone(self, value):
         if abs(value) < self.deadzone:
@@ -127,14 +200,15 @@ class PS5TeleopNode(Node):
         )
 
     def update(self):
-        if not self.robot.is_ready():
+        measured_pose = self.current_robot_pose()
+        if measured_pose is None:
             return
 
         # Initialize target from actual robot pose
         if self.target_pose is None:
-            self.target_pose = self.robot.end_effector_pose
-            self.robot.set_target(pose=self.target_pose)
-            self.get_logger().info("Robot target initialized")
+            self.target_pose = measured_pose
+            self.send_target()
+            self.get_logger().info("Teleop target initialized")
 
         # Communication timeout
         joy_valid = (
@@ -149,16 +223,16 @@ class PS5TeleopNode(Node):
             self.enabled = False
 
             # Hold the current measured pose
-            self.target_pose = self.robot.end_effector_pose
-            self.robot.set_target(pose=self.target_pose)
+            self.target_pose = measured_pose
+            self.send_target()
             return
 
         # Deadman released
         if not self.enabled:
             self.active = False
 
-            self.target_pose = self.robot.end_effector_pose
-            self.robot.set_target(pose=self.target_pose)
+            self.target_pose = measured_pose
+            self.send_target()
             return
 
         # Require a deadman release before activation
@@ -167,8 +241,8 @@ class PS5TeleopNode(Node):
 
         # Synchronize target when control is activated
         if not self.active:
-            self.target_pose = self.robot.end_effector_pose
-            self.robot.set_target(pose=self.target_pose)
+            self.target_pose = measured_pose
+            self.send_target()
             self.active = True
             return
 
@@ -214,7 +288,7 @@ class PS5TeleopNode(Node):
         )
 
         # Send target to CRISP Robot
-        self.robot.set_target(pose=self.target_pose)
+        self.send_target()
 
 def main(args=None):
     rclpy.init(args=args)
@@ -230,9 +304,10 @@ def main(args=None):
 
     finally:
         if node is not None:
-            # Remove application targets before shutdown.
-            # This is not a guaranteed hardware stop.
-            node.robot.reset_targets()
+            if node.mode == "robot":
+                # Remove application targets before shutdown.
+                # This is not a guaranteed hardware stop.
+                node.robot.reset_targets()
             node.destroy_node()
 
         if rclpy.ok():

@@ -1,5 +1,5 @@
 {
-    "name": "${localWorkspaceFolderBasename}",
+    "name": "project_work",
     "privileged": true,
     "remoteUser": "developer",
     "dockerComposeFile": "../docker-compose.yml",
