@@ -30,3 +30,11 @@ Makefile
 
 # Exclude rosbag files from repo
 bags/
+
+# OpenPIE checkpoints and generated reconstruction data
+policy.safetensors
+value_fn.safetensors
+policy_keys.json
+value_fn_keys.json
+openpie-0.6/checkpoints/
+openpie-0.6/outputs/
