@@ -14,6 +14,7 @@ from rclpy.node import Node
 from rclpy.qos import qos_profile_sensor_data, qos_profile_system_default
 from sensor_msgs.msg import CameraInfo, CompressedImage, Image
 
+from crisp_py.camera.aruco_workspace import ArucoWorkspaceMask
 from crisp_py.camera.camera_config import CameraConfig, DummyCameraConfig
 from crisp_py.config.path import find_config, list_configs_in_folder
 from crisp_py.utils.callback_monitor import CallbackMonitor
@@ -63,6 +64,14 @@ class Camera:
         )
 
         self.cv_bridge = CvBridge()
+        self._workspace_mask = (
+            ArucoWorkspaceMask(
+                self.config.workspace_aruco_ids,
+                self.config.workspace_aruco_dictionary,
+            )
+            if self.config.workspace_aruco_ids is not None
+            else None
+        )
 
         self._camera_subscriber = self.node.create_subscription(
             CompressedImage,
@@ -207,7 +216,11 @@ class Camera:
 
     def is_ready(self) -> bool:
         """Returns True if camera image and resolution are available."""
-        return self._current_image is not None and self.config.resolution is not None
+        return (
+            self._current_image is not None
+            and self.config.resolution is not None
+            and (self._workspace_mask is None or self._workspace_mask.is_calibrated)
+        )
 
     def wait_until_ready(self, timeout: float = 10.0, check_frequency: float = 10.0):
         """Wait until camera image and resolution are available."""
@@ -222,12 +235,20 @@ class Camera:
                 error_msg += (
                     f"Is the camera publishing to the topic {self._camera_subscriber.topic_name}?"
                 )
+                if self._workspace_mask is not None and not self._workspace_mask.is_calibrated:
+                    error_msg += (
+                        " The workspace mask is not calibrated; make all four configured "
+                        "ArUco markers visible and verify their IDs and dictionary."
+                    )
                 raise TimeoutError(error_msg)
 
     def _callback_current_color_image(self, msg: CompressedImage):
         """Receive and store the current image."""
         self._image_has_changed = True
-        self._current_image = self.ros_msg_to_image(msg)
+        image = self.ros_msg_to_image(msg)
+        if self._workspace_mask is not None:
+            image = self._workspace_mask.apply(image)
+        self._current_image = image
 
     def _callback_current_color_info(self, msg: CameraInfo):
         """Receive and store the current camera info."""

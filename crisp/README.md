@@ -58,6 +58,38 @@ The patch fixes streamed teleoperation's gripper access. These commands replace 
 | `franka_fm_sim` | Simulation with cameras |
 | `franka_fm_no_cameras` | Real robot without cameras |
 
+### Side-camera workspace mask
+
+The `franka_fm_real` environment masks its side-camera images to the polygon
+formed by four ArUco marker centers. Configure `workspace_aruco_ids` in
+`src/config/envs/franka_fm_real.yaml` with the four printed IDs, in order around
+the field boundary, and set `workspace_aruco_dictionary` to the dictionary
+used to generate those markers. The defaults are IDs `0, 1, 2, 3` from
+`DICT_4X4_50`; replace them if the physical markers differ.
+
+Keep the side camera fixed and make all four markers visible when the camera
+node starts. The side camera is not ready until that initial calibration
+succeeds, and uncalibrated frames are black. Afterward the calibrated polygon
+is retained if a marker is covered during an episode, so occlusion does not
+change the workspace boundary. Pixels outside the polygon are set to black.
+The wrist camera is not processed. Re-copy the real environment config to the
+local `crisp_gym` checkout after changing the IDs.
+
+To identify and save the marker IDs, first start the side camera as described
+in the recording workflow, then run this from a Pixi `jazzy-lerobot` shell in
+`crisp/`:
+
+```bash
+python src/scripts/calibrate_aruco_workspace.py --write-config
+```
+
+The preview labels each detected tag. Click a tag and press `1` through `4` to
+assign positions clockwise around the workspace, starting at any corner. Press
+`s` to save the four unique IDs to `src/config/envs/franka_fm_real.yaml`; press
+`r` to clear the assignments or `q` to quit. Without `--write-config`, the
+script prints the YAML values without changing the file. After saving, copy the
+updated real config into the local `crisp_gym` checkout as described above.
+
 ## 5. Build the teleoperation workspace
 
 In the activated Pixi shell, from `crisp/`:

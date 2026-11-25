@@ -21,6 +21,8 @@ class CameraConfig:
     resolution: list[int, int] | None = None
     crop_width: list[int | float, int | float] | None = None
     crop_height: list[int | float, int | float] | None = None
+    workspace_aruco_ids: list[int] | None = None
+    workspace_aruco_dictionary: str = "DICT_4X4_50"
 
     @classmethod
     def from_yaml(cls, yaml_path: Path, **overrides) -> "CameraConfig":  # noqa: ANN003
@@ -47,6 +49,19 @@ class CameraConfig:
             if not (isinstance(self.resolution, (list, tuple)) and len(self.resolution) == 2):
                 raise ValueError(
                     f"Resolution must be a list or tuple with (width, height). Got: {self.resolution} of type {type(self.resolution)}"
+                )
+
+        if self.workspace_aruco_ids is not None:
+            if (
+                len(self.workspace_aruco_ids) != 4
+                or len(set(self.workspace_aruco_ids)) != 4
+                or any(
+                    isinstance(marker_id, bool) or not isinstance(marker_id, int) or marker_id < 0
+                    for marker_id in self.workspace_aruco_ids
+                )
+            ):
+                raise ValueError(
+                    "workspace_aruco_ids must contain four unique non-negative integers."
                 )
 
         if self.crop_width is not None:

@@ -29,5 +29,7 @@ camera_configs:
     resolution: [480, 640]
     camera_color_image_topic: "/camera/side_camera/color/image_raw"
     camera_color_info_topic: "/camera/side_camera/color/camera_info"
+    workspace_aruco_ids: [0, 1, 2, 3]
+    workspace_aruco_dictionary: "DICT_4X4_50"
 
 sensor_configs: []

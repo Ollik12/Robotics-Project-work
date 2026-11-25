@@ -27,6 +27,15 @@ class TestCameraConfig:
         assert config.camera_color_info_topic == "test/color/info"
         assert config.max_image_delay == 1.0
 
+    def test_workspace_aruco_ids_require_four_unique_non_negative_ids(self):
+        """Reject invalid workspace marker IDs."""
+        with pytest.raises(ValueError, match="four unique non-negative integers"):
+            CameraConfig(
+                camera_color_image_topic="test/color/image",
+                camera_color_info_topic="test/color/info",
+                workspace_aruco_ids=[0, 1, 1, 3],
+            )
+
     def test_camera_config_custom_values(self):
         """Test CameraConfig with custom values."""
         config = CameraConfig(
@@ -199,6 +208,29 @@ class TestCameraProperties:
 
                 assert np.array_equal(result, test_image)
                 # Note: CallbackMonitor handles freshness checking automatically
+
+    def test_is_ready_waits_for_workspace_mask_calibration(self):
+        """Do not mark a workspace-masked camera ready before calibration."""
+        with patch("crisp_py.camera.camera.rclpy") as mock_rclpy:
+            mock_rclpy.ok.return_value = True
+
+            with patch("crisp_py.camera.camera.CallbackMonitor"):
+                mock_node = Mock()
+                mock_node.create_subscription.return_value = Mock()
+                mock_rclpy.create_node.return_value = mock_node
+
+                config = CameraConfig(
+                    camera_color_image_topic="test/color/image",
+                    camera_color_info_topic="test/color/info",
+                    resolution=(100, 100),
+                )
+                camera = Camera(config=config, spin_node=False)
+                camera._current_image = np.zeros((100, 100, 3), dtype=np.uint8)
+                camera._workspace_mask = Mock(is_calibrated=False)
+
+                assert not camera.is_ready()
+                camera._workspace_mask.is_calibrated = True
+                assert camera.is_ready()
 
     def test_camera_resolution_with_config(self):
         """Test resolution property with config set."""
